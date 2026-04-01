@@ -1,20 +1,25 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-vue-next';
-import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
+import {
+    CircleHelp,
+    FolderKanban,
+    HandCoins,
+    KanbanSquare,
+    LayoutGrid,
+    LogOut,
+    Users,
+    Wrench,
+} from 'lucide-vue-next';
 import NavMain from '@/components/NavMain.vue';
-import NavUser from '@/components/NavUser.vue';
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as clientsIndex } from '@/routes/clients';
+import { index as projectsIndex } from '@/routes/projects';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -23,44 +28,81 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
+        title: 'Customers',
+        href: clientsIndex(),
+        icon: Users,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Projects',
+        href: projectsIndex(),
+        icon: FolderKanban,
+    },
+    {
+        title: 'Installment Payments',
+        href: '#',
+        icon: HandCoins,
+    },
+    {
+        title: 'Recurring Services',
+        href: '#',
+        icon: Wrench,
+    },
+    {
+        title: 'Kanban Board',
+        href: '#',
+        icon: KanbanSquare,
     },
 ];
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
+    <Sidebar
+        collapsible="offcanvas"
+        variant="sidebar"
+        class="border-r-0 md:*:data-[sidebar=sidebar]:bg-[#eef3f8] dark:md:*:data-[sidebar=sidebar]:bg-[#1f2937]"
+    >
+        <SidebarHeader class="px-6 pt-7 pb-6">
+            <Link :href="dashboard()" class="block">
+                <div class="space-y-1">
+                    <h1
+                        class="text-lg font-black tracking-tight text-sidebar-foreground"
+                    >
+                        Kinetic CRM
+                    </h1>
+                    <p
+                        class="text-[10px] font-bold tracking-[0.24em] text-sidebar-foreground/50 uppercase"
+                    >
+                        Premium Management
+                    </p>
+                </div>
+            </Link>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent class="pb-4">
             <NavMain :items="mainNavItems" />
         </SidebarContent>
 
-        <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
-            <NavUser />
+        <SidebarFooter class="px-5 pt-4 pb-6">
+            <div class="space-y-1 border-t border-sidebar-border/35 pt-4">
+                <button
+                    type="button"
+                    class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/60 transition hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                >
+                    <CircleHelp class="size-4" />
+                    <span>Support</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/60 transition hover:bg-sidebar-accent/60 hover:text-destructive"
+                >
+                    <LogOut class="size-4" />
+                    <span>Sign Out</span>
+                </button>
+            </div>
         </SidebarFooter>
     </Sidebar>
+
     <slot />
 </template>

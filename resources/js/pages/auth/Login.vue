@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
+import { ArrowRight, LayoutGrid, LockKeyhole, Mail } from 'lucide-vue-next';
 import PasswordInput from '@/components/PasswordInput.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
+import AuthField from '@/modules/auth/components/AuthField.vue';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Log in to your account',
-        description: 'Enter your email and password below to log in',
+        title: 'CRM Woozie',
+        description: 'Access your premium workspace',
+        variant: 'login',
     },
 });
 
@@ -29,83 +29,111 @@ defineProps<{
 <template>
     <Head title="Log in" />
 
-    <div
-        v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
-    >
-        {{ status }}
-    </div>
-
-    <Form
-        v-bind="store.form()"
-        :reset-on-success="['password']"
-        v-slot="{ errors, processing }"
-        class="flex flex-col gap-6"
-    >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    required
-                    autofocus
-                    :tabindex="1"
-                    autocomplete="email"
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
-
-            <div class="grid gap-2">
-                <div class="flex items-center justify-between">
-                    <Label for="password">Password</Label>
-                    <TextLink
-                        v-if="canResetPassword"
-                        :href="request()"
-                        class="text-sm"
-                        :tabindex="5"
-                    >
-                        Forgot password?
-                    </TextLink>
-                </div>
-                <PasswordInput
-                    id="password"
-                    name="password"
-                    required
-                    :tabindex="2"
-                    autocomplete="current-password"
-                    placeholder="Password"
-                />
-                <InputError :message="errors.password" />
-            </div>
-
-            <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-3">
-                    <Checkbox id="remember" name="remember" :tabindex="3" />
-                    <span>Remember me</span>
-                </Label>
-            </div>
-
-            <Button
-                type="submit"
-                class="mt-4 w-full"
-                :tabindex="4"
-                :disabled="processing"
-                data-test="login-button"
+    <div class="mx-auto flex w-full max-w-md flex-col items-center">
+        <div class="space-y-5 text-center">
+            <div
+                class="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/12 text-primary shadow-sm ring-1 ring-primary/10"
             >
-                <Spinner v-if="processing" />
-                Log in
-            </Button>
+                <LayoutGrid class="size-7" />
+            </div>
+
+            <div class="space-y-2">
+                <h1 class="text-4xl font-black tracking-tight text-foreground">
+                    CRM Woozie
+                </h1>
+            </div>
         </div>
 
-        <div
-            class="text-center text-sm text-muted-foreground"
-            v-if="canRegister"
-        >
-            Don't have an account?
-            <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+        <div class="mt-10 w-full">
+            <Card
+                class="rounded-4xl border-border/40 bg-card/92 p-8 shadow-[0_22px_60px_-28px_rgba(59,130,246,0.35)] backdrop-blur dark:border-border/70 dark:bg-card/88 dark:shadow-[0_24px_70px_-32px_rgba(2,6,23,0.82)]"
+            >
+                <div class="space-y-7">
+                    <div
+                        v-if="status"
+                        class="rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary"
+                    >
+                        {{ status }}
+                    </div>
+
+                    <Form
+                        v-bind="store.form()"
+                        :reset-on-success="['password']"
+                        v-slot="{ errors, processing }"
+                        class="space-y-6"
+                    >
+                        <AuthField
+                            label="Email"
+                            for-id="email"
+                            :icon="Mail"
+                            :error="errors.email"
+                        >
+                            <Input
+                                id="email"
+                                type="email"
+                                name="email"
+                                required
+                                autofocus
+                                :tabindex="1"
+                                autocomplete="email"
+                                placeholder="name@company.com"
+                                class="h-14 rounded-xl border-transparent bg-muted/55 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
+                            />
+                        </AuthField>
+
+                        <AuthField
+                            label="Password"
+                            for-id="password"
+                            :icon="LockKeyhole"
+                            :error="errors.password"
+                        >
+                            <PasswordInput
+                                id="password"
+                                name="password"
+                                required
+                                :tabindex="2"
+                                autocomplete="current-password"
+                                placeholder="Enter your password"
+                                class="h-14 rounded-xl border-transparent bg-muted/55 pr-12 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
+                            />
+                        </AuthField>
+
+                        <div
+                            class="flex items-center justify-between gap-4 pt-1"
+                        >
+                            <Label
+                                for="remember"
+                                class="flex items-center gap-3 text-sm font-medium text-muted-foreground"
+                            >
+                                <Checkbox
+                                    id="remember"
+                                    name="remember"
+                                    :tabindex="3"
+                                />
+                                <span>Remember this device</span>
+                            </Label>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            class="h-14 w-full cursor-pointer rounded-xl text-sm font-semibold shadow-lg shadow-primary/25"
+                            :tabindex="4"
+                            :disabled="processing"
+                            data-test="login-button"
+                        >
+                            <Spinner v-if="processing" />
+                            <span>
+                                {{
+                                    processing
+                                        ? 'Signing in...'
+                                        : 'Log in to workspace'
+                                }}
+                            </span>
+                            <ArrowRight class="size-4" />
+                        </Button>
+                    </Form>
+                </div>
+            </Card>
         </div>
-    </Form>
+    </div>
 </template>
