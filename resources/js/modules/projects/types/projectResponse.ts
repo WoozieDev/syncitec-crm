@@ -1,4 +1,5 @@
 import type {
+    ProjectDetail,
     Project,
     ProjectClientOption,
     ProjectStatusOption,
@@ -53,5 +54,5 @@ export interface ProjectEditProps extends ProjectCreateProps {
 }
 
 export interface ProjectShowProps {
-    project: Project;
+    project: ProjectDetail;
 }

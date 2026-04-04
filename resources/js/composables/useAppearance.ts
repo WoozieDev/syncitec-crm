@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/vue3';
 import type { ComputedRef, Ref } from 'vue';
 import { computed, onMounted, ref } from 'vue';
 import type { Appearance, ResolvedAppearance } from '@/types';
@@ -84,8 +85,23 @@ export function initializeTheme(): void {
 }
 
 const appearance = ref<Appearance>('system');
+let hasInitializedAppearance = false;
+
+const isAppearance = (value: unknown): value is Appearance =>
+    value === 'light' || value === 'dark' || value === 'system';
 
 export function useAppearance(): UseAppearanceReturn {
+    const page = usePage();
+
+    if (!hasInitializedAppearance) {
+        const sharedAppearance = page.props.appearance;
+
+        appearance.value = isAppearance(sharedAppearance)
+            ? sharedAppearance
+            : 'system';
+        hasInitializedAppearance = true;
+    }
+
     onMounted(() => {
         const savedAppearance = localStorage.getItem(
             'appearance',

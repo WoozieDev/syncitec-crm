@@ -7,6 +7,9 @@ use App\Http\Requests\Projects\StoreProjectRequest;
 use App\Http\Requests\Projects\UpdateProjectRequest;
 use App\Models\Client;
 use App\Models\Project;
+use App\Models\ProjectModule;
+use App\Models\ProjectPayment;
+use App\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -130,11 +133,23 @@ class ProjectController extends Controller
      */
     public function show(Project $project): Response
     {
-        $project->loadMissing(['client:id,name,company']);
+        $project->load([
+            'client:id,name,company,email,phone,country',
+            'payments' => fn ($query) => $query
+                ->orderByDesc('payment_date')
+                ->orderByDesc('id'),
+            'modules' => fn ($query) => $query
+                ->orderBy('order')
+                ->orderBy('id'),
+            'tasks' => fn ($query) => $query
+                ->with('module:id,project_id,name,order')
+                ->orderBy('order')
+                ->orderBy('id'),
+        ]);
         $project->loadSum('payments as paid_amount', 'amount');
 
         return Inertia::render('projects/Show', [
-            'project' => $this->projectData($project),
+            'project' => $this->projectShowData($project),
         ]);
     }
 
@@ -300,6 +315,120 @@ class ProjectController extends Controller
             ],
             'created_at' => $project->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $project->updated_at?->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function projectShowData(Project $project): array
+    {
+        $projectData = $this->projectData($project);
+
+        return [
+            ...$projectData,
+            'client' => [
+                ...$projectData['client'],
+                'email' => $project->client?->email,
+                'phone' => $project->client?->phone,
+                'country' => $project->client?->country,
+            ],
+            'financial_summary' => [
+                'total_price' => (float) $project->price,
+                'total_paid' => (float) ($project->paid_amount ?? 0),
+                'pending_balance' => max(
+                    (float) $project->price - (float) ($project->paid_amount ?? 0),
+                    0
+                ),
+            ],
+            'payments' => $project->payments
+                ->map(fn (ProjectPayment $payment) => $this->projectPaymentData($payment))
+                ->values()
+                ->all(),
+            'modules' => $project->modules
+                ->map(fn (ProjectModule $module) => $this->projectModuleData($module))
+                ->values()
+                ->all(),
+            'tasks' => $project->tasks
+                ->map(fn (Task $task) => $this->projectTaskData($task))
+                ->values()
+                ->all(),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     amount: float,
+     *     payment_date: string|null,
+     *     payment_method: string,
+     *     notes: string|null,
+     *     created_at: string|null,
+     *     updated_at: string|null
+     * }
+     */
+    private function projectPaymentData(ProjectPayment $payment): array
+    {
+        return [
+            'id' => $payment->id,
+            'amount' => (float) $payment->amount,
+            'payment_date' => $payment->payment_date?->format('Y-m-d'),
+            'payment_method' => (string) $payment->payment_method,
+            'notes' => $payment->notes,
+            'created_at' => $payment->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $payment->updated_at?->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     name: string,
+     *     order: int
+     * }
+     */
+    private function projectModuleData(ProjectModule $module): array
+    {
+        return [
+            'id' => $module->id,
+            'name' => $module->name,
+            'order' => (int) $module->order,
+        ];
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     module_id: int|null,
+     *     title: string,
+     *     description: string|null,
+     *     status: string,
+     *     priority: string|null,
+     *     order: int,
+     *     module: array{id: int, name: string, order: int}|null,
+     *     created_at: string|null,
+     *     updated_at: string|null
+     * }
+     */
+    private function projectTaskData(Task $task): array
+    {
+        return [
+            'id' => $task->id,
+            'module_id' => $task->module_id,
+            'title' => $task->title,
+            'description' => $task->description,
+            'status' => (string) $task->status,
+            'priority' => $task->priority,
+            'order' => (int) $task->order,
+            'module' => $task->module
+                ? [
+                    'id' => $task->module->id,
+                    'name' => $task->module->name,
+                    'order' => (int) $task->module->order,
+                ]
+                : null,
+            'created_at' => $task->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $task->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 

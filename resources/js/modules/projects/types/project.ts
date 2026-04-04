@@ -17,6 +17,53 @@ export interface ProjectClient {
     display_name: string;
 }
 
+export interface ProjectClientDetail extends ProjectClient {
+    email: string | null;
+    phone: string | null;
+    country: string | null;
+}
+
+export interface ProjectFinancialSummary {
+    total_price: number;
+    total_paid: number;
+    pending_balance: number;
+}
+
+export interface ProjectPayment {
+    id: number;
+    amount: number;
+    payment_date: string | null;
+    payment_method: string;
+    notes: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+}
+
+export interface ProjectModule {
+    id: number;
+    name: string;
+    order: number;
+}
+
+export interface ProjectTaskModule {
+    id: number;
+    name: string;
+    order: number;
+}
+
+export interface ProjectTask {
+    id: number;
+    module_id: number | null;
+    title: string;
+    description: string | null;
+    status: string;
+    priority: string | null;
+    order: number;
+    module: ProjectTaskModule | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+}
+
 export interface Project {
     id: number;
     project_code: string;
@@ -37,4 +84,12 @@ export interface Project {
     client: ProjectClient;
     created_at?: string | null;
     updated_at?: string | null;
+}
+
+export interface ProjectDetail extends Project {
+    client: ProjectClientDetail;
+    financial_summary: ProjectFinancialSummary;
+    payments: ProjectPayment[];
+    modules: ProjectModule[];
+    tasks: ProjectTask[];
 }
