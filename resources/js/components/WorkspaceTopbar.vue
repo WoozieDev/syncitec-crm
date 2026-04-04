@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { Bell } from 'lucide-vue-next';
 import { computed } from 'vue';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,13 +13,16 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
+import type { BreadcrumbItem } from '@/types';
 
 type Props = {
     showSidebarTrigger?: boolean;
+    breadcrumbs?: BreadcrumbItem[];
 };
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
     showSidebarTrigger: false,
+    breadcrumbs: () => [],
 });
 
 const page = usePage();
@@ -31,7 +35,17 @@ const auth = computed(() => page.props.auth);
     >
         <div class="flex h-16 items-center gap-4 px-4 sm:px-6">
             <div class="flex items-center gap-3">
-                <SidebarTrigger v-if="showSidebarTrigger" class="md:hidden" />
+                <SidebarTrigger
+                    v-if="props.showSidebarTrigger"
+                    class="md:hidden"
+                />
+            </div>
+
+            <div
+                v-if="props.breadcrumbs.length > 0"
+                class="hidden min-w-0 flex-1 md:block"
+            >
+                <Breadcrumbs :breadcrumbs="props.breadcrumbs" />
             </div>
 
             <div class="ml-auto flex items-center gap-2">

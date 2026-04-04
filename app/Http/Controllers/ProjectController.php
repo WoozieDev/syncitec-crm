@@ -15,6 +15,54 @@ use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    private const VIEW_LABELS = [
+        'all' => 'Todos',
+        'planning' => 'Planeacion',
+        'in_progress' => 'En curso',
+        'in_review' => 'En revision',
+        'done' => 'Finalizados',
+    ];
+
+    private const VIEW_STATUS_MAP = [
+        'planning' => ['draft'],
+        'in_progress' => ['active'],
+        'in_review' => ['paused'],
+        'done' => ['completed', 'canceled'],
+    ];
+
+    private const STATUS_PRESENTATIONS = [
+        'draft' => [
+            'label' => 'Planeacion',
+            'tone' => 'planning',
+            'progress_percent' => 15,
+            'progress_label' => 'Etapa de arranque',
+        ],
+        'active' => [
+            'label' => 'En curso',
+            'tone' => 'in_progress',
+            'progress_percent' => 65,
+            'progress_label' => 'Ejecucion en marcha',
+        ],
+        'paused' => [
+            'label' => 'En revision',
+            'tone' => 'in_review',
+            'progress_percent' => 90,
+            'progress_label' => 'Pendiente de revision final',
+        ],
+        'completed' => [
+            'label' => 'Finalizado',
+            'tone' => 'done',
+            'progress_percent' => 100,
+            'progress_label' => 'Proyecto finalizado',
+        ],
+        'canceled' => [
+            'label' => 'Cancelado',
+            'tone' => 'canceled',
+            'progress_percent' => 0,
+            'progress_label' => 'Proyecto cancelado',
+        ],
+    ];
+
     /**
      * Display a listing of the resource.
      */
@@ -24,20 +72,7 @@ class ProjectController extends Controller
         $view = $this->normalizeView($request->string('view')->trim()->toString());
 
         $baseQuery = Project::query()
-            ->when($search, function (Builder $query, string $search) {
-                $query->where(function (Builder $subQuery) use ($search) {
-                    $subQuery
-                        ->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhere('status', 'like', "%{$search}%")
-                        ->orWhereHas('client', function (Builder $clientQuery) use ($search) {
-                            $clientQuery
-                                ->where('name', 'like', "%{$search}%")
-                                ->orWhere('company', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
-                        });
-                });
-            });
+            ->when($search !== '', fn (Builder $query) => $query->search($search));
 
         $projects = (clone $baseQuery)
             ->when($view !== 'all', function (Builder $query) use ($view) {
@@ -45,7 +80,7 @@ class ProjectController extends Controller
             })
             ->with(['client:id,name,company'])
             ->withSum('payments as paid_amount', 'amount')
-            ->latest()
+            ->latest('created_at')
             ->paginate(8)
             ->withQueryString()
             ->through(fn (Project $project) => $this->projectData($project));
@@ -87,7 +122,7 @@ class ProjectController extends Controller
     {
         Project::create($request->validated());
 
-        return to_route('projects.index');
+        return to_route('projects.index')->with('success', 'Proyecto creado correctamente.');
     }
 
     /**
@@ -125,7 +160,7 @@ class ProjectController extends Controller
     {
         $project->update($request->validated());
 
-        return to_route('projects.index');
+        return to_route('projects.index')->with('success', 'Proyecto actualizado correctamente.');
     }
 
     /**
@@ -135,7 +170,7 @@ class ProjectController extends Controller
     {
         $project->delete();
 
-        return to_route('projects.index');
+        return to_route('projects.index')->with('success', 'Proyecto eliminado correctamente.');
     }
 
     /**
@@ -143,15 +178,7 @@ class ProjectController extends Controller
      */
     private function viewOptions(Builder $baseQuery): array
     {
-        $views = [
-            'all' => 'All Projects',
-            'planning' => 'Planning',
-            'in_progress' => 'In Progress',
-            'in_review' => 'In Review',
-            'done' => 'Done',
-        ];
-
-        return collect($views)
+        return collect(self::VIEW_LABELS)
             ->map(function (string $label, string $key) use ($baseQuery) {
                 $count = $key === 'all'
                     ? (clone $baseQuery)->count()
@@ -174,36 +201,30 @@ class ProjectController extends Controller
      */
     private function statusesByView(string $view): array
     {
-        $map = [
-            'planning' => [ProjectStatus::Draft->value],
-            'in_progress' => [ProjectStatus::Active->value],
-            'in_review' => [ProjectStatus::Paused->value],
-            'done' => [ProjectStatus::Completed->value, ProjectStatus::Canceled->value],
-        ];
-
-        return $map[$view] ?? [];
+        return self::VIEW_STATUS_MAP[$view] ?? [];
     }
 
     private function normalizeView(string $view): string
     {
-        $allowed = ['all', 'planning', 'in_progress', 'in_review', 'done'];
-
-        return in_array($view, $allowed, true) ? $view : 'all';
+        return array_key_exists($view, self::VIEW_LABELS) ? $view : 'all';
     }
 
     /**
-     * @return array<int, array{id: int, name: string, company: string, label: string}>
+     * @return array<int, array{id: int, name: string, company: string|null, label: string}>
      */
     private function clientOptions(): array
     {
         return Client::query()
             ->orderBy('company')
+            ->orderBy('name')
             ->get(['id', 'name', 'company'])
             ->map(fn (Client $client) => [
                 'id' => $client->id,
                 'name' => $client->name,
                 'company' => $client->company,
-                'label' => $client->company ?: $client->name,
+                'label' => $client->company
+                    ? "{$client->company} · {$client->name}"
+                    : $client->name,
             ])
             ->values()
             ->all();
@@ -217,7 +238,7 @@ class ProjectController extends Controller
         return collect(ProjectStatus::cases())
             ->map(fn (ProjectStatus $status) => [
                 'value' => $status->value,
-                'label' => $this->statusMeta($status->value)['label'],
+                'label' => $this->statusPresentation($status->value)['label'],
             ])
             ->values()
             ->all();
@@ -249,8 +270,7 @@ class ProjectController extends Controller
     private function projectData(Project $project): array
     {
         $status = strtolower((string) $project->status);
-        $progress = $this->statusProgress($status);
-        $statusMeta = $this->statusMeta($status);
+        $presentation = $this->statusPresentation($status);
         $totalAmount = (float) $project->price;
         $paidAmount = (float) ($project->paid_amount ?? 0);
         $balanceDue = max($totalAmount - $paidAmount, 0);
@@ -261,10 +281,10 @@ class ProjectController extends Controller
             'name' => $project->name,
             'description' => $project->description,
             'status' => $status,
-            'status_label' => $statusMeta['label'],
-            'status_tone' => $statusMeta['tone'],
-            'progress_percent' => $progress['percent'],
-            'progress_label' => $progress['label'],
+            'status_label' => $presentation['label'],
+            'status_tone' => $presentation['tone'],
+            'progress_percent' => $presentation['progress_percent'],
+            'progress_label' => $presentation['progress_label'],
             'total_amount' => $totalAmount,
             'paid_amount' => $paidAmount,
             'balance_due' => $balanceDue,
@@ -276,7 +296,7 @@ class ProjectController extends Controller
                 'id' => $project->client?->id,
                 'name' => $project->client?->name,
                 'company' => $project->client?->company,
-                'display_name' => $project->client?->company ?: $project->client?->name ?: 'No customer',
+                'display_name' => $project->client?->company ?: $project->client?->name ?: 'Sin cliente',
             ],
             'created_at' => $project->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $project->updated_at?->format('Y-m-d H:i:s'),
@@ -284,32 +304,20 @@ class ProjectController extends Controller
     }
 
     /**
-     * @return array{label: string, tone: string}
+     * @return array{
+     *     label: string,
+     *     tone: string,
+     *     progress_percent: int,
+     *     progress_label: string
+     * }
      */
-    private function statusMeta(string $status): array
+    private function statusPresentation(string $status): array
     {
-        return match ($status) {
-            ProjectStatus::Draft->value => ['label' => 'Planning', 'tone' => 'planning'],
-            ProjectStatus::Active->value => ['label' => 'In Progress', 'tone' => 'in_progress'],
-            ProjectStatus::Paused->value => ['label' => 'In Review', 'tone' => 'in_review'],
-            ProjectStatus::Completed->value => ['label' => 'Done', 'tone' => 'done'],
-            ProjectStatus::Canceled->value => ['label' => 'Canceled', 'tone' => 'canceled'],
-            default => ['label' => ucfirst($status), 'tone' => 'planning'],
-        };
-    }
-
-    /**
-     * @return array{percent: int, label: string}
-     */
-    private function statusProgress(string $status): array
-    {
-        return match ($status) {
-            ProjectStatus::Draft->value => ['percent' => 15, 'label' => 'Kickoff stage'],
-            ProjectStatus::Active->value => ['percent' => 65, 'label' => 'Stage 3 of 5'],
-            ProjectStatus::Paused->value => ['percent' => 90, 'label' => 'Final review'],
-            ProjectStatus::Completed->value => ['percent' => 100, 'label' => 'Completed'],
-            ProjectStatus::Canceled->value => ['percent' => 0, 'label' => 'Canceled'],
-            default => ['percent' => 10, 'label' => 'Initial planning'],
-        };
+        return self::STATUS_PRESENTATIONS[$status] ?? [
+            'label' => ucfirst($status),
+            'tone' => 'planning',
+            'progress_percent' => 10,
+            'progress_label' => 'Planificacion inicial',
+        ];
     }
 }

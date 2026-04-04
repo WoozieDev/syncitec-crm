@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,5 +50,21 @@ class Project extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(ProjectPayment::class);
+    }
+
+    public function scopeSearch(Builder $query, string $search): Builder
+    {
+        return $query->where(function (Builder $subQuery) use ($search) {
+            $subQuery
+                ->where('name', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('status', 'like', "%{$search}%")
+                ->orWhereHas('client', function (Builder $clientQuery) use ($search) {
+                    $clientQuery
+                        ->where('name', 'like', "%{$search}%")
+                        ->orWhere('company', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+        });
     }
 }

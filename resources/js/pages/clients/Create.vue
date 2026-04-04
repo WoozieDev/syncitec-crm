@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Building2, Mail, Phone, UserRound } from 'lucide-vue-next';
 
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -13,10 +14,10 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-import type { ClientFormData } from '@/modules/clients/types';
-import { index, create, store } from '@/routes/clients';
 import { Textarea } from '@/components/ui/textarea';
+import ClientRecommendationsCard from '@/modules/clients/components/ClientRecommendationsCard.vue';
+import type { ClientFormData } from '@/modules/clients/types';
+import { create, index, store } from '@/routes/clients';
 
 defineOptions({
     layout: {
@@ -52,125 +53,187 @@ const submit = () => {
 <template>
     <Head title="Nuevo cliente" />
 
-    <div
-        class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-    >
+    <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto p-4 sm:p-6">
         <div class="flex flex-col space-y-6">
             <Heading
                 variant="small"
                 title="Nuevo cliente"
-                description="Registra un nuevo cliente en el sistema."
+                description="Registra un nuevo cliente y deja lista su informacion comercial."
             />
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Información del cliente</CardTitle>
-                    <CardDescription>
-                        Completa los datos principales del cliente.
-                    </CardDescription>
-                </CardHeader>
+            <div class="grid gap-6 xl:grid-cols-[1fr_300px]">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Informacion del cliente</CardTitle>
+                        <CardDescription>
+                            Completa los datos clave para habilitar seguimiento
+                            comercial y operativo.
+                        </CardDescription>
+                    </CardHeader>
 
-                <CardContent>
-                    <form @submit.prevent="submit" class="space-y-6">
-                        <div class="grid gap-6 md:grid-cols-2">
-                            <div class="grid gap-2">
-                                <Label for="name">Nombre</Label>
-                                <Input
-                                    id="name"
-                                    v-model="form.name"
-                                    type="text"
-                                    placeholder="Nombre del cliente"
-                                    autocomplete="name"
-                                />
-                                <InputError :message="form.errors.name" />
+                    <CardContent>
+                        <form class="space-y-6" @submit.prevent="submit">
+                            <div class="grid gap-6 md:grid-cols-2">
+                                <div class="grid gap-2">
+                                    <Label
+                                        for="name"
+                                        class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                                    >
+                                        Nombre completo
+                                    </Label>
+                                    <div class="relative">
+                                        <UserRound
+                                            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                                        />
+                                        <Input
+                                            id="name"
+                                            v-model="form.name"
+                                            type="text"
+                                            placeholder="Ej. Jonathan Ive"
+                                            autocomplete="name"
+                                            class="pl-10"
+                                        />
+                                    </div>
+                                    <InputError :message="form.errors.name" />
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <Label
+                                        for="company"
+                                        class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                                    >
+                                        Empresa
+                                    </Label>
+                                    <div class="relative">
+                                        <Building2
+                                            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                                        />
+                                        <Input
+                                            id="company"
+                                            v-model="form.company"
+                                            type="text"
+                                            placeholder="Ej. Acme Corp"
+                                            autocomplete="organization"
+                                            class="pl-10"
+                                        />
+                                    </div>
+                                    <InputError
+                                        :message="form.errors.company"
+                                    />
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <Label
+                                        for="email"
+                                        class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                                    >
+                                        Correo
+                                    </Label>
+                                    <div class="relative">
+                                        <Mail
+                                            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                                        />
+                                        <Input
+                                            id="email"
+                                            v-model="form.email"
+                                            type="email"
+                                            placeholder="correo@empresa.com"
+                                            autocomplete="email"
+                                            class="pl-10"
+                                        />
+                                    </div>
+                                    <InputError :message="form.errors.email" />
+                                </div>
+
+                                <div class="grid gap-2">
+                                    <Label
+                                        for="phone"
+                                        class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                                    >
+                                        Telefono
+                                    </Label>
+                                    <div class="relative">
+                                        <Phone
+                                            class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                                        />
+                                        <Input
+                                            id="phone"
+                                            v-model="form.phone"
+                                            type="text"
+                                            placeholder="+1 (555) 000-0000"
+                                            autocomplete="tel"
+                                            class="pl-10"
+                                        />
+                                    </div>
+                                    <InputError :message="form.errors.phone" />
+                                </div>
+
+                                <div class="grid gap-2 md:col-span-2">
+                                    <Label
+                                        for="country"
+                                        class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                                    >
+                                        Pais
+                                    </Label>
+                                    <Input
+                                        id="country"
+                                        v-model="form.country"
+                                        type="text"
+                                        placeholder="Ej. Peru"
+                                        autocomplete="country-name"
+                                    />
+                                    <InputError
+                                        :message="form.errors.country"
+                                    />
+                                </div>
+
+                                <div class="grid gap-2 md:col-span-2">
+                                    <Label
+                                        for="notes"
+                                        class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                                    >
+                                        Notas internas
+                                    </Label>
+                                    <Textarea
+                                        id="notes"
+                                        v-model="form.notes"
+                                        rows="4"
+                                        placeholder="Contexto comercial, acuerdos o consideraciones del cliente..."
+                                    />
+                                    <InputError :message="form.errors.notes" />
+                                </div>
                             </div>
 
-                            <div class="grid gap-2">
-                                <Label for="company">Empresa</Label>
-                                <Input
-                                    id="company"
-                                    v-model="form.company"
-                                    type="text"
-                                    placeholder="Nombre de la empresa"
-                                    autocomplete="organization"
-                                />
-                                <InputError :message="form.errors.company" />
-                            </div>
-
-                            <div class="grid gap-2">
-                                <Label for="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    v-model="form.email"
-                                    type="email"
-                                    placeholder="correo@empresa.com"
-                                    autocomplete="email"
-                                />
-                                <InputError :message="form.errors.email" />
-                            </div>
-
-                            <div class="grid gap-2">
-                                <Label for="phone">Teléfono</Label>
-                                <Input
-                                    id="phone"
-                                    v-model="form.phone"
-                                    type="text"
-                                    placeholder="999999999"
-                                    autocomplete="tel"
-                                />
-                                <InputError :message="form.errors.phone" />
-                            </div>
-
-                            <div class="grid gap-2 md:col-span-2">
-                                <Label for="country">País</Label>
-                                <Input
-                                    id="country"
-                                    v-model="form.country"
-                                    type="text"
-                                    placeholder="Perú"
-                                    autocomplete="country-name"
-                                />
-                                <InputError :message="form.errors.country" />
-                            </div>
-
-                            <div class="grid gap-2 md:col-span-2">
-                                <Label for="notes">Notas</Label>
-                                <Textarea
-                                    id="notes"
-                                    v-model="form.notes"
-                                    placeholder="Notas internas del cliente"
-                                    rows="4"
-                                />
-                                <InputError :message="form.errors.notes" />
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-3">
-                            <Button
-                                type="submit"
-                                :disabled="form.processing"
-                                class="cursor-pointer"
+                            <div
+                                class="flex flex-wrap items-center justify-end gap-3 border-t pt-6"
                             >
-                                {{
-                                    form.processing
-                                        ? 'Guardando...'
-                                        : 'Crear cliente'
-                                }}
-                            </Button>
-
-                            <Link :href="index()">
+                                <Link :href="index()">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        class="cursor-pointer"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                </Link>
                                 <Button
-                                    type="button"
-                                    variant="outline"
+                                    type="submit"
+                                    :disabled="form.processing"
                                     class="cursor-pointer"
                                 >
-                                    Cancelar
+                                    {{
+                                        form.processing
+                                            ? 'Guardando...'
+                                            : 'Crear cliente'
+                                    }}
                                 </Button>
-                            </Link>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+
+                <ClientRecommendationsCard />
+            </div>
         </div>
     </div>
 </template>

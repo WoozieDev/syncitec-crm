@@ -29,27 +29,27 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Customers',
+        title: 'Clientes',
         href: clientsIndex(),
         icon: Users,
     },
     {
-        title: 'Projects',
+        title: 'Proyectos',
         href: projectsIndex(),
         icon: FolderKanban,
     },
     {
-        title: 'Installment Payments',
+        title: 'Pagos',
         href: '#',
         icon: HandCoins,
     },
     {
-        title: 'Recurring Services',
+        title: 'Servicios',
         href: '#',
         icon: Wrench,
     },
     {
-        title: 'Kanban Board',
+        title: 'Kanban',
         href: '#',
         icon: KanbanSquare,
     },
@@ -68,7 +68,7 @@ const mainNavItems: NavItem[] = [
                     <h1
                         class="text-lg font-black tracking-tight text-sidebar-foreground"
                     >
-                        Kinetic CRM
+                        Syncitec CRM
                     </h1>
                     <p
                         class="text-[10px] font-bold tracking-[0.24em] text-sidebar-foreground/50 uppercase"
@@ -95,7 +95,7 @@ const mainNavItems: NavItem[] = [
 
                 <button
                     type="button"
-                    class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/60 transition hover:bg-sidebar-accent/60 hover:text-destructive"
+                    class="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/60 transition hover:bg-sidebar-accent/60 hover:text-destructive"
                 >
                     <LogOut class="size-4" />
                     <span>Sign Out</span>

@@ -1,4 +1,4 @@
-import type { Client } from './client';
+import type { Client, ClientDetail } from './client';
 
 export interface PaginationLink {
     url: string | null;
@@ -22,4 +22,8 @@ export interface ClientIndexProps {
     filters: {
         search: string;
     };
+}
+
+export interface ClientShowProps {
+    client: ClientDetail;
 }

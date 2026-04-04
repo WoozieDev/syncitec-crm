@@ -17,6 +17,20 @@ class UpdateProjectRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'client_id' => $this->filled('client_id') ? $this->input('client_id') : null,
+            'name' => trim((string) $this->input('name')),
+            'description' => trim((string) $this->input('description')),
+            'status' => trim((string) $this->input('status')),
+            'price' => $this->filled('price') ? $this->input('price') : null,
+            'start_date' => $this->filled('start_date') ? $this->input('start_date') : null,
+            'due_date' => $this->filled('due_date') ? $this->input('due_date') : null,
+            'notes' => $this->filled('notes') ? trim((string) $this->input('notes')) : null,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

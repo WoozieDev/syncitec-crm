@@ -13,5 +13,8 @@ withDefaults(
 </script>
 
 <template>
-    <WorkspaceTopbar show-sidebar-trigger />
+    <WorkspaceTopbar
+        :breadcrumbs="breadcrumbs"
+        show-sidebar-trigger
+    />
 </template>

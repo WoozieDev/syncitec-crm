@@ -15,6 +15,14 @@ class StoreClientRequest extends FormRequest
         return true;
     }
 
+	protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => trim($this->name),
+            'email' => trim(strtolower($this->email)),
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,10 +32,10 @@ class StoreClientRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'company' => ['required', 'string', 'max:255'],
+            'company' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:clients,email'],
-            'phone' => ['required', 'string', 'max:50'],
-            'country' => ['required', 'string', 'max:100'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'country' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],
         ];
     }

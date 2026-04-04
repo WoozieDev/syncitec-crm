@@ -12,5 +12,5 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <WorkspaceTopbar />
+    <WorkspaceTopbar :breadcrumbs="breadcrumbs" />
 </template>

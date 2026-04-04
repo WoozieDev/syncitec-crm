@@ -9,11 +9,12 @@ import {
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { Card } from '@/components/ui/card';
-import type { Client, PaginationLink } from '@/modules/clients/types';
-import { edit, show } from '@/routes/clients';
+import ProjectStatusBadge from '@/modules/projects/components/ProjectStatusBadge.vue';
+import type { PaginationLink, Project } from '@/modules/projects/types';
+import { edit, show } from '@/routes/projects';
 
 const props = defineProps<{
-    items: Client[];
+    items: Project[];
     links: PaginationLink[];
     from: number;
     to: number;
@@ -21,7 +22,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'delete', client: Client): void;
+    (e: 'delete', project: Project): void;
 }>();
 
 const numericLinks = computed(() =>
@@ -30,6 +31,30 @@ const numericLinks = computed(() =>
 
 const previousLink = computed(() => props.links[0] ?? null);
 const nextLink = computed(() => props.links[props.links.length - 1] ?? null);
+
+const accentClasses: Record<string, string> = {
+    planning: 'bg-slate-400 dark:bg-slate-500',
+    in_progress: 'bg-blue-500 dark:bg-blue-400',
+    in_review: 'bg-cyan-500 dark:bg-cyan-400',
+    done: 'bg-emerald-500 dark:bg-emerald-400',
+    canceled: 'bg-rose-500 dark:bg-rose-400',
+};
+
+const progressClasses: Record<string, string> = {
+    planning: 'bg-slate-400 dark:bg-slate-500',
+    in_progress: 'bg-blue-500 dark:bg-blue-400',
+    in_review: 'bg-cyan-500 dark:bg-cyan-400',
+    done: 'bg-emerald-500 dark:bg-emerald-400',
+    canceled: 'bg-rose-500 dark:bg-rose-400',
+};
+
+const currencyFormatter = new Intl.NumberFormat('es-PE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+
+const formatCurrency = (value: number): string =>
+    `S/ ${currencyFormatter.format(value)}`;
 
 const textOrFallback = (
     value: string | null | undefined,
@@ -41,45 +66,6 @@ const textOrFallback = (
 
     return value;
 };
-
-const clientInitials = (name: string) =>
-    name
-        .trim()
-        .split(/\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase() ?? '')
-        .join('');
-
-const formatCreatedAt = (value?: string | null) => {
-    if (!value) {
-        return {
-            date: '-',
-            time: '-',
-        };
-    }
-
-    const parsedDate = new Date(value.replace(' ', 'T'));
-
-    if (Number.isNaN(parsedDate.getTime())) {
-        return {
-            date: '-',
-            time: '-',
-        };
-    }
-
-    return {
-        date: parsedDate.toLocaleDateString('es-ES', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric',
-        }),
-        time: parsedDate.toLocaleTimeString('es-ES', {
-            hour: '2-digit',
-            minute: '2-digit',
-        }),
-    };
-};
 </script>
 
 <template>
@@ -87,8 +73,13 @@ const formatCreatedAt = (value?: string | null) => {
         class="rounded-4xl border border-border/60 bg-muted/50 p-4 shadow-sm sm:p-6 dark:bg-slate-900/40"
     >
         <div
-            class="hidden px-6 pb-3 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_auto]"
+            class="hidden px-6 pb-3 lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.15fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto]"
         >
+            <p
+                class="text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
+            >
+                Proyecto
+            </p>
             <p
                 class="text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
             >
@@ -97,22 +88,22 @@ const formatCreatedAt = (value?: string | null) => {
             <p
                 class="text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
             >
-                Contacto
+                Estado
             </p>
             <p
                 class="text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
             >
-                Empresa
+                Avance
             </p>
             <p
                 class="text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
             >
-                Pais
+                Total
             </p>
             <p
                 class="text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
             >
-                Fecha de alta
+                Saldo
             </p>
             <p
                 class="text-right text-[11px] font-bold tracking-[0.18em] text-muted-foreground uppercase"
@@ -123,29 +114,31 @@ const formatCreatedAt = (value?: string | null) => {
 
         <div class="space-y-4">
             <Card
-                v-for="client in items"
-                :key="client.id"
+                v-for="project in items"
+                :key="project.id"
                 class="gap-0 rounded-3xl border-border/40 py-0 transition-colors hover:bg-accent/30"
             >
                 <div
-                    class="grid grid-cols-1 gap-4 p-4 md:p-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_auto] lg:items-center lg:gap-3"
+                    class="grid grid-cols-1 gap-4 p-4 md:p-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1.15fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_auto] lg:items-center lg:gap-3"
                 >
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-xs font-bold text-primary"
-                        >
-                            {{ clientInitials(client.name) }}
-                        </div>
+                    <div class="flex items-start gap-3">
+                        <span
+                            class="mt-0.5 h-11 w-1 rounded-full"
+                            :class="
+                                accentClasses[project.status_tone] ??
+                                accentClasses.planning
+                            "
+                        />
 
                         <div>
                             <Link
-                                :href="show(client.id)"
+                                :href="show(project.id)"
                                 class="text-sm font-bold text-foreground transition-colors hover:text-primary"
                             >
-                                {{ client.name }}
+                                {{ project.name }}
                             </Link>
                             <p class="text-[11px] text-muted-foreground">
-                                ID: #{{ client.id }}
+                                {{ project.project_code }}
                             </p>
                         </div>
                     </div>
@@ -154,13 +147,13 @@ const formatCreatedAt = (value?: string | null) => {
                         <p
                             class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase lg:hidden"
                         >
-                            Contacto
+                            Cliente
                         </p>
                         <p class="text-sm font-medium text-foreground">
-                            {{ client.email }}
+                            {{ project.client.display_name }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            {{ textOrFallback(client.phone) }}
+                            {{ textOrFallback(project.client.name, 'Sin contacto') }}
                         </p>
                     </div>
 
@@ -168,10 +161,53 @@ const formatCreatedAt = (value?: string | null) => {
                         <p
                             class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase lg:hidden"
                         >
-                            Empresa
+                            Estado
                         </p>
-                        <p class="text-sm font-medium text-foreground">
-                            {{ textOrFallback(client.company) }}
+                        <ProjectStatusBadge
+                            :label="project.status_label"
+                            :tone="project.status_tone"
+                        />
+                    </div>
+
+                    <div>
+                        <p
+                            class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase lg:hidden"
+                        >
+                            Avance
+                        </p>
+                        <div class="space-y-2">
+                            <div
+                                class="flex items-center justify-between text-xs font-semibold"
+                            >
+                                <span>{{ project.progress_percent }}%</span>
+                                <span class="text-muted-foreground">
+                                    {{ project.progress_label }}
+                                </span>
+                            </div>
+
+                            <div class="h-2 w-full rounded-full bg-muted">
+                                <div
+                                    class="h-2 rounded-full transition-[width]"
+                                    :class="
+                                        progressClasses[project.status_tone] ??
+                                        progressClasses.planning
+                                    "
+                                    :style="{
+                                        width: `${project.progress_percent}%`,
+                                    }"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <p
+                            class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase lg:hidden"
+                        >
+                            Total
+                        </p>
+                        <p class="text-sm font-semibold text-foreground">
+                            {{ formatCurrency(project.total_amount) }}
                         </p>
                     </div>
 
@@ -179,30 +215,23 @@ const formatCreatedAt = (value?: string | null) => {
                         <p
                             class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase lg:hidden"
                         >
-                            Pais
+                            Saldo
                         </p>
-                        <p class="text-sm text-foreground">
-                            {{ textOrFallback(client.country) }}
-                        </p>
-                    </div>
-
-                    <div>
                         <p
-                            class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase lg:hidden"
+                            class="text-sm font-semibold"
+                            :class="
+                                project.balance_due === 0
+                                    ? 'text-emerald-600 dark:text-emerald-300'
+                                    : 'text-foreground'
+                            "
                         >
-                            Fecha de alta
-                        </p>
-                        <p class="text-sm text-foreground">
-                            {{ formatCreatedAt(client.created_at).date }}
-                        </p>
-                        <p class="text-[11px] text-muted-foreground">
-                            {{ formatCreatedAt(client.created_at).time }}
+                            {{ formatCurrency(project.balance_due) }}
                         </p>
                     </div>
 
                     <div class="flex items-center justify-end gap-2">
                         <Link
-                            :href="show(client.id)"
+                            :href="show(project.id)"
                             class="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             title="Ver detalle"
                         >
@@ -210,7 +239,7 @@ const formatCreatedAt = (value?: string | null) => {
                         </Link>
 
                         <Link
-                            :href="edit(client.id)"
+                            :href="edit(project.id)"
                             class="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             title="Editar"
                         >
@@ -221,7 +250,7 @@ const formatCreatedAt = (value?: string | null) => {
                             type="button"
                             class="inline-flex size-9 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10"
                             title="Eliminar"
-                            @click="emit('delete', client)"
+                            @click="emit('delete', project)"
                         >
                             <Trash2 class="size-4" />
                         </button>
@@ -234,7 +263,7 @@ const formatCreatedAt = (value?: string | null) => {
                 class="rounded-3xl border-dashed py-10"
             >
                 <p class="text-center text-sm text-muted-foreground">
-                    No se encontraron clientes.
+                    No se encontraron proyectos con los filtros actuales.
                 </p>
             </Card>
         </div>
@@ -247,7 +276,7 @@ const formatCreatedAt = (value?: string | null) => {
                 <span class="font-bold text-foreground"
                     >{{ from }} - {{ to }}</span
                 >
-                de {{ total.toLocaleString('es-ES') }} clientes
+                de {{ total.toLocaleString('es-ES') }} proyectos
             </p>
 
             <div class="flex items-center gap-1">
