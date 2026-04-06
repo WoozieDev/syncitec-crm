@@ -78,11 +78,10 @@ class DashboardController extends Controller
                 ->all(),
             'tasks' => [
                 'pending' => PersonalTask::query()->where('status', 'pendiente')->count()
-                    + Task::query()->where('status', 'pendiente')->count(),
-                'in_progress' => PersonalTask::query()->where('status', 'en_progreso')->count()
-                    + Task::query()->where('status', 'en_progreso')->count(),
+                    + Task::query()->whereIn('status', Task::pendingDatabaseStatuses())->count(),
+                'in_progress' => PersonalTask::query()->where('status', 'en_progreso')->count(),
                 'completed' => PersonalTask::query()->where('status', 'completada')->count()
-                    + Task::query()->where('status', 'completada')->count(),
+                    + Task::query()->whereIn('status', Task::completedDatabaseStatuses())->count(),
                 'priority_items' => $this->priorityTasks(),
             ],
             'alerts' => [
@@ -146,8 +145,8 @@ class DashboardController extends Controller
 
         $projectTasks = Task::query()
             ->with('project:id,name')
-            ->where('priority', 'alta')
-            ->where('status', '!=', 'completada')
+            ->whereIn('priority', Task::databasePrioritiesForPriority('alta'))
+            ->whereNotIn('status', Task::completedDatabaseStatuses())
             ->latest('created_at')
             ->limit(5)
             ->get(['id', 'project_id', 'title', 'priority', 'created_at'])
@@ -160,8 +159,8 @@ class DashboardController extends Controller
                 'created_at' => $task->created_at?->format('Y-m-d H:i:s'),
             ]);
 
-        return $personalTasks
-            ->merge($projectTasks)
+        return collect($personalTasks->all())
+            ->merge($projectTasks->all())
             ->sortByDesc('created_at')
             ->take(6)
             ->values()

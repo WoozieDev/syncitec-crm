@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { LayoutGrid } from 'lucide-vue-next';
 import { computed } from 'vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import { Card } from '@/components/ui/card';
 import AuthDecorativeBackground from '@/modules/auth/components/AuthDecorativeBackground.vue';
-import { home } from '@/routes';
 
 const props = defineProps<{
     title?: string;
@@ -32,32 +31,44 @@ const isLoginVariant = computed(() => props.variant === 'login');
 
     <div
         v-else
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-6 md:p-10"
+        class="relative min-h-svh overflow-hidden bg-background px-4 py-6 sm:px-6 sm:py-8"
     >
-        <div class="w-full max-w-sm">
-            <div class="flex flex-col gap-8">
-                <div class="flex flex-col items-center gap-4">
-                    <Link
-                        :href="home()"
-                        class="flex flex-col items-center gap-2 font-medium"
-                    >
+        <AuthDecorativeBackground />
+
+        <div
+            class="relative mx-auto flex min-h-[calc(100svh-3rem)] max-w-5xl items-center justify-center"
+        >
+            <div class="w-full max-w-md">
+                <div class="space-y-8">
+                    <div class="space-y-5 text-center">
                         <div
-                            class="mb-1 flex h-9 w-9 items-center justify-center rounded-md"
+                            class="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/12 text-primary shadow-sm ring-1 ring-primary/10"
                         >
-                            <AppLogoIcon
-                                class="size-9 fill-current text-foreground dark:text-white"
-                            />
+                            <LayoutGrid class="size-7" />
                         </div>
-                        <span class="sr-only">{{ props.title }}</span>
-                    </Link>
-                    <div class="space-y-2 text-center">
-                        <h1 class="text-xl font-medium">{{ props.title }}</h1>
-                        <p class="text-center text-sm text-muted-foreground">
-                            {{ props.description }}
-                        </p>
+
+                        <div class="space-y-2">
+                            <h1
+                                class="text-3xl font-black tracking-tight text-foreground"
+                            >
+                                {{ props.title }}
+                            </h1>
+
+                            <p
+                                v-if="props.description"
+                                class="mx-auto max-w-sm text-sm leading-6 text-muted-foreground"
+                            >
+                                {{ props.description }}
+                            </p>
+                        </div>
                     </div>
+
+                    <Card
+                        class="rounded-4xl border-border/40 bg-card/92 p-8 shadow-[0_22px_60px_-28px_rgba(59,130,246,0.35)] backdrop-blur dark:border-border/70 dark:bg-card/88 dark:shadow-[0_24px_70px_-32px_rgba(2,6,23,0.82)]"
+                    >
+                        <slot />
+                    </Card>
                 </div>
-                <slot />
             </div>
         </div>
     </div>

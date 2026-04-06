@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Filter, Plus, Search, Wrench } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { Check, Filter, Plus, Search, Wrench } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+} from '@/components/ui/combobox';
 import ServicesTable from '@/modules/services/components/ServicesTable.vue';
 import { useServicesIndex } from '@/modules/services/composables/useServicesIndex';
 import type { ServiceIndexProps } from '@/modules/services/types';
@@ -35,6 +46,23 @@ const {
     pageTo,
     handleDelete,
 } = useServicesIndex(props);
+
+const clientOptions = computed(() => [
+    { id: '', label: 'Todos' },
+    ...clients.value.map((client) => ({
+        id: String(client.id),
+        label: client.label,
+    })),
+]);
+
+const selectedClient = computed({
+    get: () =>
+        clientOptions.value.find((client) => client.id === clientId.value) ??
+        clientOptions.value[0],
+    set: (client?: { id: string; label: string }) => {
+        clientId.value = client?.id ?? '';
+    },
+});
 </script>
 
 <template>
@@ -164,19 +192,30 @@ const {
                     </div>
 
                     <div class="grid flex-1 gap-3 sm:grid-cols-3">
-                        <select
-                            v-model="clientId"
-                            class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                        >
-                            <option value="">Todos los clientes</option>
-                            <option
-                                v-for="client in clients"
-                                :key="client.id"
-                                :value="String(client.id)"
-                            >
-                                {{ client.label }}
-                            </option>
-                        </select>
+                        <Combobox v-model="selectedClient" by="id">
+                            <ComboboxAnchor class="w-full">
+                                <ComboboxInput
+                                    class="h-10"
+                                    placeholder="Todos"
+                                    :display-value="(value) => value?.label ?? ''"
+                                />
+                            </ComboboxAnchor>
+                            <ComboboxList class="w-[var(--reka-combobox-trigger-width)]">
+                                <ComboboxEmpty>No se encontraron clientes.</ComboboxEmpty>
+                                <ComboboxGroup>
+                                    <ComboboxItem
+                                        v-for="client in clientOptions"
+                                        :key="client.id || 'empty'"
+                                        :value="client"
+                                    >
+                                        {{ client.label }}
+                                        <ComboboxItemIndicator>
+                                            <Check class="size-4" />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </Combobox>
 
                         <select
                             v-model="status"

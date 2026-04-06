@@ -417,8 +417,8 @@ class ProjectController extends Controller
             'module_id' => $task->module_id,
             'title' => $task->title,
             'description' => $task->description,
-            'status' => (string) $task->status,
-            'priority' => $task->priority,
+            'status' => Task::normalizeStatus((string) $task->status),
+            'priority' => Task::normalizePriority($task->priority),
             'order' => (int) $task->order,
             'module' => $task->module
                 ? [

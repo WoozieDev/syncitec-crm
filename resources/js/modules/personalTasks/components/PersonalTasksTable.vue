@@ -1,260 +1,370 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ChevronLeft, ChevronRight, Eye, Pencil, Trash2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import {
+    CalendarDays,
+    CheckCircle2,
+    Clock3,
+    Eye,
+    GripVertical,
+    Pencil,
+    Trash2,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    dueDateTone,
+    formatDate,
+    formatLabel,
+    plannerColumnClasses,
+    priorityBadgeClasses,
+    priorityDotClasses,
+    statusBadgeClasses,
+    textPreview,
+} from '@/modules/personalTasks/helpers';
 import type {
-    PaginationLink,
     PersonalTask,
+    PersonalTaskBoardColumn,
 } from '@/modules/personalTasks/types';
 import { edit, show } from '@/routes/personal-tasks';
 
 const props = defineProps<{
-    items: PersonalTask[];
-    links: PaginationLink[];
-    from: number;
-    to: number;
-    total: number;
+    board: PersonalTaskBoardColumn[];
+    backlogTasks: PersonalTask[];
+    completedTasks: PersonalTask[];
 }>();
 
 const emit = defineEmits<{
     (e: 'delete', task: PersonalTask): void;
+    (e: 'toggle-completion', payload: { task: PersonalTask; value: boolean }): void;
+    (e: 'move', payload: { task: PersonalTask; bucket: string }): void;
 }>();
 
-const numericLinks = computed(() =>
-    props.links.filter((link) => /^\d+$/.test(link.label)),
-);
+const draggingTaskId = ref<number | null>(null);
 
-const previousLink = computed(() => props.links[0] ?? null);
-const nextLink = computed(() => props.links[props.links.length - 1] ?? null);
+const taskById = computed(() => {
+    const map = new Map<number, PersonalTask>();
 
-const accentClasses: Record<string, string> = {
-    pendiente: 'bg-slate-400 dark:bg-slate-500',
-    en_progreso: 'bg-blue-500 dark:bg-blue-400',
-    en_revision: 'bg-cyan-500 dark:bg-cyan-400',
-    completada: 'bg-emerald-500 dark:bg-emerald-400',
+    props.board.forEach((column) => {
+        column.tasks.forEach((task) => map.set(task.id, task));
+    });
+
+    props.backlogTasks.forEach((task) => map.set(task.id, task));
+
+    return map;
+});
+
+const startDrag = (task: PersonalTask) => {
+    draggingTaskId.value = task.id;
 };
 
-const statusClasses: Record<string, string> = {
-    pendiente:
-        'bg-slate-500/15 text-slate-700 dark:bg-slate-400/15 dark:text-slate-200',
-    en_progreso:
-        'bg-blue-500/15 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200',
-    en_revision:
-        'bg-cyan-500/15 text-cyan-700 dark:bg-cyan-400/15 dark:text-cyan-200',
-    completada:
-        'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200',
+const endDrag = () => {
+    draggingTaskId.value = null;
 };
 
-const priorityClasses: Record<string, string> = {
-    alta: 'bg-rose-500/15 text-rose-700 dark:bg-rose-400/15 dark:text-rose-200',
-    media: 'bg-amber-500/15 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200',
-    baja: 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200',
-};
-
-const textOrFallback = (
-    value: string | null | undefined,
-    fallback = 'Sin dato',
-) => {
-    if (!value || value.trim().length === 0) {
-        return fallback;
+const dropTask = (bucket: string) => {
+    if (draggingTaskId.value === null) {
+        return;
     }
 
-    return value;
-};
+    const task = taskById.value.get(draggingTaskId.value);
 
-const formatLabel = (value: string | null | undefined): string => {
-    if (!value) {
-        return 'Sin dato';
+    if (!task) {
+        return;
     }
 
-    return value
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((part) =>
-            part.length > 0
-                ? part.charAt(0).toUpperCase() + part.slice(1)
-                : part,
-        )
-        .join(' ');
+    emit('move', { task, bucket });
+    draggingTaskId.value = null;
 };
 </script>
 
 <template>
-    <section
-        class="rounded-4xl border border-border/60 bg-muted/50 p-4 shadow-sm sm:p-6 dark:bg-slate-900/40"
-    >
-        <div class="space-y-4">
-            <Card
-                v-for="task in items"
-                :key="task.id"
-                class="gap-0 rounded-3xl border-border/40 py-0 transition-colors hover:bg-accent/30"
+    <section class="space-y-6">
+        <div class="grid gap-5 xl:grid-cols-3">
+            <div
+                v-for="column in board"
+                :key="column.key"
+                class="min-h-72 rounded-3xl border p-4"
+                :class="
+                    plannerColumnClasses[column.key] ??
+                    'border-border/60 bg-background/80'
+                "
+                @dragover.prevent
+                @drop="dropTask(column.key)"
             >
-                <div
-                    class="grid grid-cols-1 gap-4 p-4 md:p-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_minmax(0,0.55fr)_auto] xl:items-center xl:gap-3"
-                >
-                    <div class="flex items-start gap-3">
-                        <span
-                            class="mt-0.5 h-12 w-1 rounded-full"
-                            :class="
-                                accentClasses[task.status] ??
-                                accentClasses.pendiente
-                            "
-                        />
-
-                        <div class="min-w-0">
-                            <Link
-                                :href="show(task.id)"
-                                class="text-sm font-bold text-foreground transition-colors hover:text-primary"
-                            >
-                                {{ task.title }}
-                            </Link>
-                            <p class="mt-1 text-sm text-muted-foreground">
-                                {{ textOrFallback(task.description, 'Sin descripcion.') }}
-                            </p>
-                        </div>
-                    </div>
-
+                <div class="mb-4 flex items-center justify-between gap-3">
                     <div>
                         <p
-                            class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase xl:hidden"
+                            class="text-xs font-black tracking-[0.18em] text-muted-foreground uppercase"
                         >
-                            Estado
+                            {{ column.label }}
                         </p>
-                        <span
-                            class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.12em] uppercase"
-                            :class="
-                                statusClasses[task.status] ??
-                                statusClasses.pendiente
-                            "
-                        >
-                            {{ formatLabel(task.status) }}
-                        </span>
-                    </div>
-
-                    <div>
-                        <p
-                            class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase xl:hidden"
-                        >
-                            Prioridad
-                        </p>
-                        <span
-                            class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold tracking-[0.12em] uppercase"
-                            :class="
-                                priorityClasses[
-                                    (task.priority ?? '').toLowerCase()
-                                ] ?? 'bg-muted text-muted-foreground'
-                            "
-                        >
-                            {{ formatLabel(task.priority ?? 'sin prioridad') }}
-                        </span>
-                    </div>
-
-                    <div>
-                        <p
-                            class="mb-1 text-[10px] font-bold tracking-[0.18em] text-muted-foreground uppercase xl:hidden"
-                        >
-                            Orden
-                        </p>
-                        <p class="text-sm font-semibold text-foreground">
-                            {{ task.order }}
+                        <p class="mt-1 text-sm text-muted-foreground">
+                            {{ column.count }} activas
                         </p>
                     </div>
 
-                    <div class="flex items-center justify-end gap-2">
-                        <Link
-                            :href="show(task.id)"
-                            class="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            title="Ver detalle"
-                        >
-                            <Eye class="size-4" />
-                        </Link>
-
-                        <Link
-                            :href="edit(task.id)"
-                            class="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            title="Editar"
-                        >
-                            <Pencil class="size-4" />
-                        </Link>
-
-                        <button
-                            type="button"
-                            class="inline-flex size-9 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10"
-                            title="Eliminar"
-                            @click="emit('delete', task)"
-                        >
-                            <Trash2 class="size-4" />
-                        </button>
-                    </div>
+                    <span
+                        class="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground"
+                    >
+                        {{ column.count }}
+                    </span>
                 </div>
-            </Card>
 
-            <Card
-                v-if="items.length === 0"
-                class="rounded-3xl border-dashed py-10"
-            >
-                <p class="text-center text-sm text-muted-foreground">
-                    No se encontraron tareas con los filtros actuales.
-                </p>
-            </Card>
+                <div class="space-y-4">
+                    <article
+                        v-for="task in column.tasks"
+                        :key="task.id"
+                        draggable="true"
+                        class="group rounded-3xl border border-border/60 bg-card/95 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                        @dragstart="startDrag(task)"
+                        @dragend="endDrag"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <Checkbox
+                                    :model-value="task.is_completed"
+                                    class="mt-1"
+                                    @update:model-value="
+                                        emit('toggle-completion', {
+                                            task,
+                                            value: Boolean($event),
+                                        })
+                                    "
+                                />
+
+                                <div class="space-y-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <span
+                                            class="inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                                            :class="
+                                                priorityBadgeClasses[
+                                                    task.priority ?? ''
+                                                ] ??
+                                                'border-border/60 bg-muted text-muted-foreground'
+                                            "
+                                        >
+                                            <span
+                                                class="size-2 rounded-full"
+                                                :class="
+                                                    priorityDotClasses[
+                                                        task.priority ?? ''
+                                                    ] ?? 'bg-muted-foreground/40'
+                                                "
+                                            />
+                                            {{
+                                                formatLabel(
+                                                    task.priority ??
+                                                        'sin prioridad',
+                                                )
+                                            }}
+                                        </span>
+
+                                        <span
+                                            class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                                            :class="
+                                                statusBadgeClasses[
+                                                    task.status
+                                                ] ??
+                                                'bg-muted text-muted-foreground'
+                                            "
+                                        >
+                                            {{ formatLabel(task.status) }}
+                                        </span>
+                                    </div>
+
+                                    <Link
+                                        :href="show(task.id)"
+                                        class="block text-base font-bold text-foreground transition-colors hover:text-primary"
+                                    >
+                                        {{ task.title }}
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <GripVertical
+                                class="size-4 text-muted-foreground/60 transition-colors group-hover:text-foreground"
+                            />
+                        </div>
+
+                        <p class="mt-3 text-sm leading-6 text-muted-foreground">
+                            {{ textPreview(task.description) }}
+                        </p>
+
+                        <div
+                            class="mt-4 flex items-center justify-between gap-3 border-t border-border/50 pt-4"
+                        >
+                            <div class="flex items-center gap-2 text-xs">
+                                <CalendarDays class="size-4 text-muted-foreground" />
+                                <span :class="dueDateTone(task)">
+                                    {{ formatDate(task.due_date, 'Sin fecha') }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <Link
+                                    :href="show(task.id)"
+                                    class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                    title="Ver detalle"
+                                >
+                                    <Eye class="size-4" />
+                                </Link>
+
+                                <Link
+                                    :href="edit(task.id)"
+                                    class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                    title="Editar"
+                                >
+                                    <Pencil class="size-4" />
+                                </Link>
+
+                                <button
+                                    type="button"
+                                    class="inline-flex size-8 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10"
+                                    title="Eliminar"
+                                    @click="emit('delete', task)"
+                                >
+                                    <Trash2 class="size-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <Card
+                        v-if="column.tasks.length === 0"
+                        class="rounded-3xl border-dashed bg-background/80 py-10 text-center text-sm text-muted-foreground"
+                    >
+                        Arrastra tareas aqui o crea una nueva para este bloque.
+                    </Card>
+                </div>
+            </div>
         </div>
 
-        <div
-            class="mt-6 flex flex-col gap-4 text-xs font-medium text-muted-foreground md:mt-8 md:flex-row md:items-center md:justify-between"
-        >
-            <p>
-                Mostrando
-                <span class="font-bold text-foreground"
-                    >{{ from }} - {{ to }}</span
-                >
-                de {{ total.toLocaleString('es-ES') }} tareas
-            </p>
-
-            <div class="flex items-center gap-1">
-                <Link
-                    v-if="previousLink?.url"
-                    :href="previousLink.url"
-                    class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-                >
-                    <ChevronLeft class="size-4" />
-                </Link>
-                <span
-                    v-else
-                    class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground/40"
-                >
-                    <ChevronLeft class="size-4" />
-                </span>
-
-                <template v-for="link in numericLinks" :key="link.label">
-                    <Link
-                        v-if="link.url"
-                        :href="link.url"
-                        class="inline-flex size-8 items-center justify-center rounded-lg text-xs font-bold transition-colors"
-                        :class="
-                            link.active
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-muted-foreground hover:bg-background hover:text-foreground'
-                        "
+        <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+            <section
+                class="rounded-3xl border border-border/60 bg-card/70 p-5"
+                @dragover.prevent
+                @drop="dropTask('backlog')"
+            >
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-black tracking-tight">
+                            Backlog / Sin fecha
+                        </h2>
+                        <p class="text-sm text-muted-foreground">
+                            Tareas que aun no entran al ciclo inmediato.
+                        </p>
+                    </div>
+                    <span
+                        class="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground"
                     >
-                        {{ link.label }}
-                    </Link>
-                </template>
+                        {{ backlogTasks.length }}
+                    </span>
+                </div>
 
-                <Link
-                    v-if="nextLink?.url"
-                    :href="nextLink.url"
-                    class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-                >
-                    <ChevronRight class="size-4" />
-                </Link>
-                <span
-                    v-else
-                    class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground/40"
-                >
-                    <ChevronRight class="size-4" />
-                </span>
-            </div>
+                <div class="space-y-3">
+                    <article
+                        v-for="task in backlogTasks"
+                        :key="task.id"
+                        draggable="true"
+                        class="rounded-2xl border border-border/60 bg-background/80 p-4"
+                        @dragstart="startDrag(task)"
+                        @dragend="endDrag"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <Link
+                                    :href="show(task.id)"
+                                    class="text-sm font-bold text-foreground transition-colors hover:text-primary"
+                                >
+                                    {{ task.title }}
+                                </Link>
+                                <p class="mt-1 text-sm text-muted-foreground">
+                                    {{ textPreview(task.description) }}
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="inline-flex size-8 items-center justify-center rounded-lg text-destructive transition-colors hover:bg-destructive/10"
+                                title="Eliminar"
+                                @click="emit('delete', task)"
+                            >
+                                <Trash2 class="size-4" />
+                            </button>
+                        </div>
+                    </article>
+
+                    <Card
+                        v-if="backlogTasks.length === 0"
+                        class="rounded-2xl border-dashed bg-background/80 py-8 text-center text-sm text-muted-foreground"
+                    >
+                        Sin tareas en backlog.
+                    </Card>
+                </div>
+            </section>
+
+            <section class="rounded-3xl border border-border/60 bg-card/70 p-5">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-black tracking-tight">
+                            Completadas recientes
+                        </h2>
+                        <p class="text-sm text-muted-foreground">
+                            Historial corto para reabrir o verificar avance.
+                        </p>
+                    </div>
+                    <CheckCircle2 class="size-5 text-emerald-500" />
+                </div>
+
+                <div class="space-y-3">
+                    <article
+                        v-for="task in completedTasks"
+                        :key="task.id"
+                        class="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4"
+                    >
+                        <div class="flex items-start gap-3">
+                            <Checkbox
+                                :model-value="task.is_completed"
+                                class="mt-1"
+                                @update:model-value="
+                                    emit('toggle-completion', {
+                                        task,
+                                        value: Boolean($event),
+                                    })
+                                "
+                            />
+
+                            <div class="min-w-0 flex-1">
+                                <Link
+                                    :href="show(task.id)"
+                                    class="text-sm font-bold text-foreground transition-colors hover:text-primary"
+                                >
+                                    {{ task.title }}
+                                </Link>
+                                <p class="mt-1 text-sm text-muted-foreground">
+                                    {{ textPreview(task.description) }}
+                                </p>
+                                <div
+                                    class="mt-3 flex items-center gap-2 text-xs text-muted-foreground"
+                                >
+                                    <Clock3 class="size-4" />
+                                    <span>
+                                        Completada {{ formatDate(task.completed_at) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <Card
+                        v-if="completedTasks.length === 0"
+                        class="rounded-2xl border-dashed bg-background/80 py-8 text-center text-sm text-muted-foreground"
+                    >
+                        Aun no hay tareas completadas.
+                    </Card>
+                </div>
+            </section>
         </div>
     </section>
 </template>

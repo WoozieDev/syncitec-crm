@@ -4,15 +4,28 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
 import {
     CalendarDays,
+    Check,
+    ChevronsUpDown,
     CircleDollarSign,
     FileText,
     Layers3,
     StickyNote,
-    UserRound,
     Wrench,
 } from 'lucide-vue-next';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+    ComboboxTrigger,
+    ComboboxViewport,
+} from '@/components/ui/combobox';
 import {
     Card,
     CardContent,
@@ -85,6 +98,23 @@ const selectedProviderLabel = computed(() => {
 
     return selectedProvider?.label ?? 'Sin proveedor';
 });
+
+const clientOptions = computed(() => [
+    ...props.clients.map((client) => ({
+        id: String(client.id),
+        label: client.label,
+    })),
+]);
+
+const selectedClient = computed({
+    get: () =>
+        clientOptions.value.find(
+            (client) => client.id === props.form.client_id,
+        ),
+    set: (client?: { id: string; label: string }) => {
+        props.form.client_id = client?.id ?? '';
+    },
+});
 </script>
 
 <template>
@@ -106,25 +136,46 @@ const selectedProviderLabel = computed(() => {
                         >
                             Cliente
                         </Label>
-                        <div class="relative">
-                            <UserRound
-                                class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <select
-                                id="client_id"
-                                v-model="form.client_id"
-                                class="h-10 w-full rounded-md border border-input bg-background py-2 pr-3 pl-10 text-sm"
-                            >
-                                <option value="">Selecciona un cliente</option>
-                                <option
-                                    v-for="client in clients"
-                                    :key="client.id"
-                                    :value="String(client.id)"
-                                >
-                                    {{ client.label }}
-                                </option>
-                            </select>
-                        </div>
+                        <Combobox v-model="selectedClient" by="id">
+                            <ComboboxAnchor as-child class="w-full">
+                                <ComboboxTrigger as-child>
+                                    <Button
+                                        variant="outline"
+                                        class="h-10 w-full justify-between font-normal"
+                                    >
+                                        {{
+                                            selectedClient?.label ??
+                                            'Seleccionar'
+                                        }}
+                                        <ChevronsUpDown class="size-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </ComboboxTrigger>
+                            </ComboboxAnchor>
+                            <ComboboxList class="w-[var(--reka-combobox-trigger-width)] overflow-hidden p-0">
+                                <div class="border-b px-3">
+                                    <ComboboxInput
+                                        class="h-9 border-0 px-0 shadow-none focus-visible:ring-0"
+                                        placeholder="Buscar cliente..."
+                                        :display-value="(value) => value?.label ?? ''"
+                                    />
+                                </div>
+                                <ComboboxEmpty>No se encontraron clientes.</ComboboxEmpty>
+                                <ComboboxViewport>
+                                    <ComboboxGroup>
+                                        <ComboboxItem
+                                            v-for="client in clientOptions"
+                                            :key="client.id"
+                                            :value="client"
+                                        >
+                                            {{ client.label }}
+                                            <ComboboxItemIndicator>
+                                                <Check class="size-4" />
+                                            </ComboboxItemIndicator>
+                                        </ComboboxItem>
+                                    </ComboboxGroup>
+                                </ComboboxViewport>
+                            </ComboboxList>
+                        </Combobox>
                         <InputError :message="form.errors.client_id" />
                     </div>
 

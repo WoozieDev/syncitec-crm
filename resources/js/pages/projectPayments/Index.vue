@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { CreditCard, Filter, Plus, Search } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { Check, CreditCard, Filter, Plus, Search } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+} from '@/components/ui/combobox';
 import ProjectPaymentsTable from '@/modules/projectPayments/components/ProjectPaymentsTable.vue';
 import { useProjectPaymentsIndex } from '@/modules/projectPayments/composables/useProjectPaymentsIndex';
 import type { ProjectPaymentIndexProps } from '@/modules/projectPayments/types';
@@ -41,6 +52,23 @@ const currencyFormatter = new Intl.NumberFormat('es-PE', {
 
 const formatCurrency = (value: number): string =>
     `S/ ${currencyFormatter.format(value)}`;
+
+const projectOptions = computed(() => [
+    { id: '', label: 'Todos' },
+    ...projects.value.map((project) => ({
+        id: String(project.id),
+        label: project.label,
+    })),
+]);
+
+const selectedProject = computed({
+    get: () =>
+        projectOptions.value.find((project) => project.id === projectId.value) ??
+        projectOptions.value[0],
+    set: (project?: { id: string; label: string }) => {
+        projectId.value = project?.id ?? '';
+    },
+});
 </script>
 
 <template>
@@ -168,19 +196,30 @@ const formatCurrency = (value: number): string =>
                     </div>
 
                     <div class="grid flex-1 gap-3 sm:grid-cols-2">
-                        <select
-                            v-model="projectId"
-                            class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                        >
-                            <option value="">Todos los proyectos</option>
-                            <option
-                                v-for="project in projects"
-                                :key="project.id"
-                                :value="String(project.id)"
-                            >
-                                {{ project.label }}
-                            </option>
-                        </select>
+                        <Combobox v-model="selectedProject" by="id">
+                            <ComboboxAnchor class="w-full">
+                                <ComboboxInput
+                                    class="h-10"
+                                    placeholder="Todos"
+                                    :display-value="(value) => value?.label ?? ''"
+                                />
+                            </ComboboxAnchor>
+                            <ComboboxList class="w-[var(--reka-combobox-trigger-width)]">
+                                <ComboboxEmpty>No se encontraron proyectos.</ComboboxEmpty>
+                                <ComboboxGroup>
+                                    <ComboboxItem
+                                        v-for="project in projectOptions"
+                                        :key="project.id || 'empty'"
+                                        :value="project"
+                                    >
+                                        {{ project.label }}
+                                        <ComboboxItemIndicator>
+                                            <Check class="size-4" />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </Combobox>
 
                         <select
                             v-model="paymentMethod"

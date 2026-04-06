@@ -28,7 +28,7 @@ defineProps<{
             <component
                 :is="icon"
                 v-if="icon"
-                class="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                class="pointer-events-none absolute top-1/2 left-4 z-10 size-4 -translate-y-1/2 text-muted-foreground"
             />
 
             <slot />

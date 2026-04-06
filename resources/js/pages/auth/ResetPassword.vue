@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { LockKeyhole, Mail } from 'lucide-vue-next';
 import { ref } from 'vue';
-import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import AuthField from '@/modules/auth/components/AuthField.vue';
 import { update } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Reset password',
-        description: 'Please enter your new password below',
+        title: 'Restablecer contrasena',
+        description: 'Ingresa tu nueva contrasena para recuperar el acceso.',
     },
 });
 
@@ -25,62 +25,72 @@ const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <Head title="Reset password" />
+    <Head title="Restablecer contrasena" />
 
     <Form
         v-bind="update.form()"
         :transform="(data) => ({ ...data, token, email })"
         :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"
+        class="space-y-6"
     >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="email">Email</Label>
+        <div class="space-y-6">
+            <AuthField
+                label="Correo electronico"
+                for-id="email"
+                :icon="Mail"
+                :error="errors.email"
+            >
                 <Input
                     id="email"
                     type="email"
                     name="email"
                     autocomplete="email"
                     v-model="inputEmail"
-                    class="mt-1 block w-full"
+                    class="h-14 rounded-xl border-transparent bg-muted/55 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                     readonly
                 />
-                <InputError :message="errors.email" class="mt-2" />
-            </div>
+            </AuthField>
 
-            <div class="grid gap-2">
-                <Label for="password">Password</Label>
+            <AuthField
+                label="Nueva contrasena"
+                for-id="password"
+                :icon="LockKeyhole"
+                :error="errors.password"
+            >
                 <PasswordInput
                     id="password"
                     name="password"
                     autocomplete="new-password"
-                    class="mt-1 block w-full"
+                    class="h-14 rounded-xl border-transparent bg-muted/55 pr-12 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                     autofocus
-                    placeholder="Password"
+                    placeholder="Nueva contrasena"
                 />
-                <InputError :message="errors.password" />
-            </div>
+            </AuthField>
 
-            <div class="grid gap-2">
-                <Label for="password_confirmation"> Confirm password </Label>
+            <AuthField
+                label="Confirmar contrasena"
+                for-id="password_confirmation"
+                :icon="LockKeyhole"
+                :error="errors.password_confirmation"
+            >
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
                     autocomplete="new-password"
-                    class="mt-1 block w-full"
-                    placeholder="Confirm password"
+                    class="h-14 rounded-xl border-transparent bg-muted/55 pr-12 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
+                    placeholder="Confirmar contrasena"
                 />
-                <InputError :message="errors.password_confirmation" />
-            </div>
+            </AuthField>
 
             <Button
                 type="submit"
-                class="mt-4 w-full"
+                class="h-14 w-full cursor-pointer rounded-xl text-sm font-semibold shadow-lg shadow-primary/25"
                 :disabled="processing"
                 data-test="reset-password-button"
             >
                 <Spinner v-if="processing" />
-                Reset password
+                Restablecer contrasena
             </Button>
         </div>
     </Form>

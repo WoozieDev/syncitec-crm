@@ -18,8 +18,8 @@ class TaskFactory extends Factory
             'module_id' => null,
             'title' => fake()->sentence(fake()->numberBetween(3, 6)),
             'description' => fake()->optional()->paragraph(),
-            'status' => fake()->randomElement(['pendiente', 'en_progreso', 'bloqueada', 'completada']),
-            'priority' => fake()->optional(0.85)->randomElement(['baja', 'media', 'alta', 'urgente']),
+            'status' => fake()->randomElement(Task::STATUSES),
+            'priority' => fake()->optional(0.85)->randomElement(Task::PRIORITIES),
             'order' => fake()->numberBetween(1, 20),
         ];
     }

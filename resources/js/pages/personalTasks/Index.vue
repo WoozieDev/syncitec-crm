@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { CheckSquare, Filter, Plus, Search } from 'lucide-vue-next';
+import {
+    CalendarRange,
+    CheckCircle2,
+    Filter,
+    Plus,
+    Search,
+} from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import PersonalTasksTable from '@/modules/personalTasks/components/PersonalTasksTable.vue';
 import { usePersonalTasksIndex } from '@/modules/personalTasks/composables/usePersonalTasksIndex';
@@ -21,17 +27,17 @@ defineOptions({
 });
 
 const {
-    tasks,
+    board,
+    backlogTasks,
+    completedTasks,
     overview,
-    statusOptions,
     priorityOptions,
     search,
-    status,
     priority,
-    totalTasks,
-    pageFrom,
-    pageTo,
+    completion,
     handleDelete,
+    toggleCompletion,
+    moveTask,
 } = usePersonalTasksIndex(props);
 </script>
 
@@ -52,9 +58,10 @@ const {
                         <div
                             class="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-sm text-primary"
                         >
-                            <CheckSquare class="size-4" />
+                            <CalendarRange class="size-4" />
                             <span class="font-semibold">
-                                {{ totalTasks.toLocaleString('es-ES') }} tareas
+                                {{ overview.open_tasks.toLocaleString('es-ES') }}
+                                activas
                             </span>
                         </div>
 
@@ -62,11 +69,12 @@ const {
                             <h1
                                 class="text-3xl font-black tracking-tight text-foreground sm:text-4xl"
                             >
-                                Tareas personales
+                                Planner personal
                             </h1>
-                            <p class="mt-2 max-w-2xl text-sm text-muted-foreground">
-                                Organiza tu carga operativa personal con el mismo
-                                flujo visual del CRM.
+                            <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
+                                Vista ligera tipo Asana para decidir que haces
+                                hoy, que va esta semana y que se puede empujar
+                                a la siguiente.
                             </p>
                         </div>
                     </div>
@@ -81,7 +89,7 @@ const {
                             <input
                                 v-model="search"
                                 type="text"
-                                placeholder="Buscar por titulo, descripcion, estado o prioridad"
+                                placeholder="Buscar por titulo, descripcion o prioridad"
                                 class="h-11 w-full rounded-full border border-border/60 bg-background/70 pr-4 pl-10 text-sm transition outline-none focus:border-primary/20 focus-visible:ring-2 focus-visible:ring-primary/20"
                             />
                         </div>
@@ -97,7 +105,7 @@ const {
                     </div>
                 </div>
 
-                <div class="grid gap-4 lg:grid-cols-4">
+                <div class="grid gap-4 lg:grid-cols-5">
                     <article
                         class="rounded-2xl border border-border/60 bg-background/75 px-5 py-4"
                     >
@@ -110,15 +118,15 @@ const {
                     </article>
 
                     <article
-                        class="rounded-2xl border border-slate-500/20 bg-slate-500/10 px-5 py-4"
+                        class="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-4"
                     >
                         <p class="text-xs font-semibold text-muted-foreground">
-                            Pendientes
+                            Hoy
                         </p>
                         <p
-                            class="mt-2 text-3xl font-black tracking-tight text-slate-700 dark:text-slate-200"
+                            class="mt-2 text-3xl font-black tracking-tight text-rose-700 dark:text-rose-200"
                         >
-                            {{ overview.pending }}
+                            {{ overview.today }}
                         </p>
                     </article>
 
@@ -126,12 +134,12 @@ const {
                         class="rounded-2xl border border-blue-500/20 bg-blue-500/10 px-5 py-4"
                     >
                         <p class="text-xs font-semibold text-muted-foreground">
-                            En progreso
+                            Esta semana
                         </p>
                         <p
                             class="mt-2 text-3xl font-black tracking-tight text-blue-700 dark:text-blue-200"
                         >
-                            {{ overview.in_progress }}
+                            {{ overview.this_week }}
                         </p>
                     </article>
 
@@ -139,12 +147,23 @@ const {
                         class="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4"
                     >
                         <p class="text-xs font-semibold text-muted-foreground">
-                            Completadas
+                            Proxima semana
                         </p>
                         <p
                             class="mt-2 text-3xl font-black tracking-tight text-emerald-700 dark:text-emerald-200"
                         >
-                            {{ overview.completed }}
+                            {{ overview.next_week }}
+                        </p>
+                    </article>
+
+                    <article
+                        class="rounded-2xl border border-border/60 bg-muted/50 px-5 py-4"
+                    >
+                        <p class="text-xs font-semibold text-muted-foreground">
+                            Backlog
+                        </p>
+                        <p class="mt-2 text-3xl font-black tracking-tight">
+                            {{ overview.backlog }}
                         </p>
                     </article>
                 </div>
@@ -164,27 +183,37 @@ const {
                             type="button"
                             class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
                             :class="
-                                status === ''
+                                completion === ''
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                             "
-                            @click="status = ''"
+                            @click="completion = ''"
                         >
-                            Todos los estados
+                            Todo
                         </button>
                         <button
-                            v-for="option in statusOptions"
-                            :key="option.value"
                             type="button"
                             class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
                             :class="
-                                status === option.value
+                                completion === 'open'
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                             "
-                            @click="status = option.value"
+                            @click="completion = 'open'"
                         >
-                            {{ option.label }}
+                            Abiertas
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
+                            :class="
+                                completion === 'completed'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
+                            "
+                            @click="completion = 'completed'"
+                        >
+                            Completadas
                         </button>
                     </div>
 
@@ -216,17 +245,29 @@ const {
                             {{ option.label }}
                         </button>
                     </div>
+
+                    <div
+                        class="flex items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-sm text-muted-foreground"
+                    >
+                        <CheckCircle2 class="size-4 text-emerald-600" />
+                        <span>
+                            Arrastra tarjetas entre paneles para cambiar su fecha
+                            objetivo sin editar el formulario.
+                        </span>
+                    </div>
                 </div>
             </div>
         </section>
 
         <PersonalTasksTable
-            :items="tasks.data"
-            :links="tasks.links"
-            :from="pageFrom"
-            :to="pageTo"
-            :total="totalTasks"
+            :board="board"
+            :backlog-tasks="backlogTasks"
+            :completed-tasks="completedTasks"
             @delete="handleDelete"
+            @toggle-completion="
+                toggleCompletion($event.task, $event.value)
+            "
+            @move="moveTask($event.task, $event.bucket)"
         />
     </div>
 </template>

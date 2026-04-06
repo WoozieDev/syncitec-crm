@@ -2,10 +2,8 @@
 import { Head, Link } from '@inertiajs/vue3';
 import {
     Building2,
-    Eye,
     Mail,
     MapPin,
-    Pencil,
     Phone,
     Plus,
     SquareKanban,
@@ -24,13 +22,7 @@ import ProjectStatusBadge from '@/modules/projects/components/ProjectStatusBadge
 import type { ProjectShowProps } from '@/modules/projects/types';
 import { show as showClient } from '@/routes/clients';
 import { create as createProjectPayment } from '@/routes/project-payments';
-import {
-    create as createProjectTask,
-    edit as editProjectTask,
-    index as indexProjectTasks,
-    show as showProjectTask,
-} from '@/routes/project-tasks';
-import { edit, index } from '@/routes/projects';
+import { edit, index, kanban as projectKanban } from '@/routes/projects';
 
 defineProps<ProjectShowProps>();
 
@@ -63,10 +55,6 @@ const priorityClasses: Record<string, string> = {
 const taskStatusClasses: Record<string, string> = {
     pendiente:
         'bg-slate-500/15 text-slate-700 dark:bg-slate-400/15 dark:text-slate-200',
-    en_progreso:
-        'bg-blue-500/15 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200',
-    en_revision:
-        'bg-cyan-500/15 text-cyan-700 dark:bg-cyan-400/15 dark:text-cyan-200',
     completada:
         'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200',
 };
@@ -170,18 +158,12 @@ const formatLabel = (value: string | null | undefined): string => {
                 </div>
 
                 <div class="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                    <Link :href="edit(project.id)">
-                        <Button
-                            variant="outline"
-                            class="w-full cursor-pointer sm:w-auto"
-                        >
-                            <Pencil class="size-4" />
-                            <span>Editar proyecto</span>
-                        </Button>
-                    </Link>
-
                     <Link
-                        :href="createProjectPayment({ query: { project: project.id } })"
+                        :href="
+                            createProjectPayment({
+                                query: { project: project.id },
+                            })
+                        "
                     >
                         <Button
                             variant="outline"
@@ -192,12 +174,19 @@ const formatLabel = (value: string | null | undefined): string => {
                         </Button>
                     </Link>
 
-                    <Link
-                        :href="createProjectTask({ query: { project: project.id } })"
-                    >
+                    <Link :href="projectKanban(project.id)">
                         <Button class="w-full cursor-pointer sm:w-auto">
-                            <Plus class="size-4" />
-                            <span>Anadir tarea</span>
+                            <SquareKanban class="size-4" />
+                            <span>Kanban</span>
+                        </Button>
+                    </Link>
+
+                    <Link :href="edit(project.id)">
+                        <Button
+                            variant="outline"
+                            class="w-full cursor-pointer sm:w-auto"
+                        >
+                            <span>Editar proyecto</span>
                         </Button>
                     </Link>
                 </div>
@@ -288,33 +277,20 @@ const formatLabel = (value: string | null | undefined): string => {
                         <div>
                             <CardTitle>Tareas del proyecto</CardTitle>
                             <CardDescription>
-                                Seguimiento operativo en base a tareas
-                                registradas.
+                                Resumen operativo del trabajo actual. La gestion completa vive dentro del Kanban del proyecto.
                             </CardDescription>
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-2">
-                            <Link
-                                :href="indexProjectTasks({ query: { project_id: project.id } })"
+                        <Link :href="projectKanban(project.id)">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                class="cursor-pointer"
                             >
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    class="cursor-pointer"
-                                >
-                                    Ver todas
-                                </Button>
-                            </Link>
-
-                            <Link
-                                :href="createProjectTask({ query: { project: project.id } })"
-                            >
-                                <Button size="sm" class="cursor-pointer">
-                                    <Plus class="size-4" />
-                                    <span>Anadir tarea</span>
-                                </Button>
-                            </Link>
-                        </div>
+                                <SquareKanban class="size-4" />
+                                <span>Abrir Kanban</span>
+                            </Button>
+                        </Link>
                     </CardHeader>
 
                     <CardContent>
@@ -395,24 +371,6 @@ const formatLabel = (value: string | null | undefined): string => {
                                             </span>
                                         </div>
                                     </div>
-
-                                    <div class="flex items-center justify-end gap-2">
-                                        <Link
-                                            :href="showProjectTask(task.id)"
-                                            class="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                            title="Ver detalle"
-                                        >
-                                            <Eye class="size-4" />
-                                        </Link>
-
-                                        <Link
-                                            :href="editProjectTask(task.id)"
-                                            class="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                            title="Editar"
-                                        >
-                                            <Pencil class="size-4" />
-                                        </Link>
-                                    </div>
                                 </div>
                             </article>
                         </div>
@@ -441,7 +399,11 @@ const formatLabel = (value: string | null | undefined): string => {
                         </div>
 
                         <Link
-                            :href="createProjectPayment({ query: { project: project.id } })"
+                            :href="
+                                createProjectPayment({
+                                    query: { project: project.id },
+                                })
+                            "
                         >
                             <Button
                                 variant="outline"

@@ -1,47 +1,33 @@
 import type {
+    PersonalTaskBoardColumn,
     PersonalTask,
     PersonalTaskPriorityOption,
-    PersonalTaskStatusOption,
 } from './personalTask';
-
-export interface PaginationLink {
-    url: string | null;
-    label: string;
-    active: boolean;
-}
-
-export interface PaginatedPersonalTasks {
-    data: PersonalTask[];
-    links: PaginationLink[];
-    total?: number;
-    from?: number | null;
-    to?: number | null;
-    current_page?: number;
-    last_page?: number;
-    per_page?: number;
-}
 
 export interface PersonalTaskOverview {
     total_tasks: number;
-    pending: number;
-    in_progress: number;
+    open_tasks: number;
     completed: number;
+    today: number;
+    this_week: number;
+    next_week: number;
+    backlog: number;
 }
 
 export interface PersonalTaskIndexProps {
-    tasks: PaginatedPersonalTasks;
     filters: {
         search: string;
-        status: string;
         priority: string;
+        completion: string;
     };
     overview: PersonalTaskOverview;
-    status_options: PersonalTaskStatusOption[];
     priority_options: PersonalTaskPriorityOption[];
+    board: PersonalTaskBoardColumn[];
+    backlog_tasks: PersonalTask[];
+    completed_tasks: PersonalTask[];
 }
 
 export interface PersonalTaskCreateProps {
-    status_options: PersonalTaskStatusOption[];
     priority_options: PersonalTaskPriorityOption[];
 }
 

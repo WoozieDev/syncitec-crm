@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CheckCircle2, Lightbulb, ListOrdered } from 'lucide-vue-next';
+import { CalendarRange, CircleCheckBig, Flag, GripVertical } from 'lucide-vue-next';
 import {
     Card,
     CardContent,
@@ -14,32 +14,40 @@ import {
         <CardHeader>
             <CardTitle>Guia rapida</CardTitle>
             <CardDescription>
-                Mantiene tus tareas personales ordenadas y reutilizables.
+                El modulo ahora funciona como planner personal ligero tipo Asana.
             </CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-4 text-sm text-muted-foreground">
             <div class="flex items-start gap-3">
-                <Lightbulb class="mt-0.5 size-4 text-primary" />
+                <CalendarRange class="mt-0.5 size-4 text-primary" />
                 <p>
-                    Usa un titulo corto y accionable para identificar rapido la
-                    tarea.
+                    Usa la fecha objetivo para que la tarea caiga en Hoy, Esta
+                    semana o Proxima semana.
                 </p>
             </div>
 
             <div class="flex items-start gap-3">
-                <CheckCircle2 class="mt-0.5 size-4 text-primary" />
+                <Flag class="mt-0.5 size-4 text-primary" />
                 <p>
-                    El estado y la prioridad mantienen una base limpia para la
-                    futura vista Kanban.
+                    La prioridad usa semaforo visual: rojo para alta, amarillo
+                    para media y verde para baja.
                 </p>
             </div>
 
             <div class="flex items-start gap-3">
-                <ListOrdered class="mt-0.5 size-4 text-primary" />
+                <CircleCheckBig class="mt-0.5 size-4 text-primary" />
                 <p>
-                    El orden te permite decidir secuencia sin cambiar la
-                    estructura real de la tabla.
+                    Completada registra cierre automatico para separar trabajo
+                    activo de historial reciente.
+                </p>
+            </div>
+
+            <div class="flex items-start gap-3">
+                <GripVertical class="mt-0.5 size-4 text-primary" />
+                <p>
+                    El orden ya no se captura manualmente; queda interno para el
+                    tablero y movimiento entre paneles.
                 </p>
             </div>
         </CardContent>

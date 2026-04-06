@@ -9,7 +9,7 @@ import type {
 } from '@/modules/personalTasks/types';
 import { create, index, store } from '@/routes/personal-tasks';
 
-const props = defineProps<PersonalTaskCreateProps>();
+defineProps<PersonalTaskCreateProps>();
 
 defineOptions({
     layout: {
@@ -29,9 +29,10 @@ defineOptions({
 const form = useForm<PersonalTaskFormData>({
     title: '',
     description: '',
-    status: props.status_options[0]?.value ?? 'pendiente',
+    status: 'pendiente',
     priority: '',
-    order: '0',
+    due_date: '',
+    is_completed: false,
 });
 
 const submit = () => {
@@ -49,18 +50,17 @@ const submit = () => {
             <Heading
                 variant="small"
                 title="Nueva tarea personal"
-                description="Registra una nueva tarea personal usando la misma base visual del sistema."
+                description="Crea una tarea personal con fecha objetivo, prioridad visible y descripcion enriquecida."
             />
 
             <div class="grid gap-6 xl:grid-cols-[1fr_320px]">
                 <PersonalTaskForm
                     :form="form"
-                    :status-options="status_options"
                     :priority-options="priority_options"
                     :cancel-href="index.url()"
                     submit-label="Guardar tarea"
                     processing-label="Guardando..."
-                    description="Completa solo los campos reales disponibles en personal_tasks."
+                    description="Captura solo lo que mueve la tarea: fecha, prioridad, estado y contexto."
                     @submit="submit"
                 />
 

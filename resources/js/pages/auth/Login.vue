@@ -2,6 +2,7 @@
 import { Form, Head } from '@inertiajs/vue3';
 import { ArrowRight, LayoutGrid, LockKeyhole, Mail } from 'lucide-vue-next';
 import PasswordInput from '@/components/PasswordInput.vue';
+import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,11 +11,12 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthField from '@/modules/auth/components/AuthField.vue';
 import { store } from '@/routes/login';
+import { request as passwordRequest } from '@/routes/password';
 
 defineOptions({
     layout: {
         title: 'CRM Woozie',
-        description: 'Access your premium workspace',
+        description: 'Accede a tu espacio de trabajo',
         variant: 'login',
     },
 });
@@ -27,7 +29,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Log in" />
+    <Head title="Iniciar sesion" />
 
     <div class="mx-auto flex w-full max-w-md flex-col items-center">
         <div class="space-y-5 text-center">
@@ -63,7 +65,7 @@ defineProps<{
                         class="space-y-6"
                     >
                         <AuthField
-                            label="Email"
+                            label="Correo electronico"
                             for-id="email"
                             :icon="Mail"
                             :error="errors.email"
@@ -76,24 +78,33 @@ defineProps<{
                                 autofocus
                                 :tabindex="1"
                                 autocomplete="email"
-                                placeholder="name@company.com"
+                                placeholder="nombre@empresa.com"
                                 class="h-14 rounded-xl border-transparent bg-muted/55 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                             />
                         </AuthField>
 
                         <AuthField
-                            label="Password"
+                            label="Contrasena"
                             for-id="password"
                             :icon="LockKeyhole"
                             :error="errors.password"
                         >
+                            <template v-if="canResetPassword" #action>
+                                <TextLink
+                                    :href="passwordRequest()"
+                                    class="text-xs font-semibold normal-case tracking-normal"
+                                >
+                                    Recuperar contrasena
+                                </TextLink>
+                            </template>
+
                             <PasswordInput
                                 id="password"
                                 name="password"
                                 required
                                 :tabindex="2"
                                 autocomplete="current-password"
-                                placeholder="Enter your password"
+                                placeholder="Ingresa tu contrasena"
                                 class="h-14 rounded-xl border-transparent bg-muted/55 pr-12 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                             />
                         </AuthField>
@@ -110,7 +121,7 @@ defineProps<{
                                     name="remember"
                                     :tabindex="3"
                                 />
-                                <span>Remember this device</span>
+                                <span>Recordar este dispositivo</span>
                             </Label>
                         </div>
 
@@ -125,8 +136,8 @@ defineProps<{
                             <span>
                                 {{
                                     processing
-                                        ? 'Signing in...'
-                                        : 'Log in to workspace'
+                                        ? 'Ingresando...'
+                                        : 'Ingresar al espacio de trabajo'
                                 }}
                             </span>
                             <ArrowRight class="size-4" />

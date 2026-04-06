@@ -3,5 +3,6 @@ export interface PersonalTaskFormData {
     description: string;
     status: string;
     priority: string;
-    order: string;
+    due_date: string;
+    is_completed: boolean;
 }

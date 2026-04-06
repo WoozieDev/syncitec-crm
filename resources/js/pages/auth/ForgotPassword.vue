@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
+import { Mail } from 'lucide-vue-next';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import AuthField from '@/modules/auth/components/AuthField.vue';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 defineOptions({
     layout: {
-        title: 'Forgot password',
-        description: 'Enter your email to receive a password reset link',
+        title: 'Recuperar contrasena',
+        description:
+            'Ingresa tu correo para enviarte un enlace de restablecimiento.',
     },
 });
 
@@ -22,45 +23,49 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Forgot password" />
+    <Head title="Recuperar contrasena" />
 
     <div
         v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
+        class="mb-6 rounded-2xl border border-primary/20 bg-primary/10 px-4 py-3 text-center text-sm text-primary"
     >
         {{ status }}
     </div>
 
     <div class="space-y-6">
-        <Form v-bind="email.form()" v-slot="{ errors, processing }">
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+        <Form v-bind="email.form()" v-slot="{ errors, processing }" class="space-y-6">
+            <AuthField
+                label="Correo electronico"
+                for-id="email"
+                :icon="Mail"
+                :error="errors.email"
+            >
                 <Input
                     id="email"
                     type="email"
                     name="email"
                     autocomplete="off"
                     autofocus
-                    placeholder="email@example.com"
+                    placeholder="nombre@empresa.com"
+                    class="h-14 rounded-xl border-transparent bg-muted/55 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                 />
-                <InputError :message="errors.email" />
-            </div>
+            </AuthField>
 
-            <div class="my-6 flex items-center justify-start">
+            <div class="flex items-center justify-start">
                 <Button
-                    class="w-full"
+                    class="h-14 w-full cursor-pointer rounded-xl text-sm font-semibold shadow-lg shadow-primary/25"
                     :disabled="processing"
                     data-test="email-password-reset-link-button"
                 >
                     <Spinner v-if="processing" />
-                    Email password reset link
+                    Enviar enlace de recuperacion
                 </Button>
             </div>
         </Form>
 
         <div class="space-x-1 text-center text-sm text-muted-foreground">
-            <span>Or, return to</span>
-            <TextLink :href="login()">log in</TextLink>
+            <span>Volver a</span>
+            <TextLink :href="login()">iniciar sesion</TextLink>
         </div>
     </div>
 </template>

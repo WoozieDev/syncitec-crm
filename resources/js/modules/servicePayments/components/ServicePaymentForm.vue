@@ -1,9 +1,28 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import type { InertiaForm } from '@inertiajs/vue3';
-import { CalendarDays, CreditCard, FileText, Wrench } from 'lucide-vue-next';
+import { computed } from 'vue';
+import {
+    CalendarDays,
+    Check,
+    ChevronsUpDown,
+    CreditCard,
+    FileText,
+} from 'lucide-vue-next';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+    ComboboxTrigger,
+    ComboboxViewport,
+} from '@/components/ui/combobox';
 import {
     Card,
     CardContent,
@@ -19,7 +38,7 @@ import type {
     ServicePaymentServiceOption,
 } from '@/modules/servicePayments/types';
 
-defineProps<{
+const props = defineProps<{
     form: InertiaForm<ServicePaymentFormData>;
     services: ServicePaymentServiceOption[];
     submitLabel: string;
@@ -31,6 +50,23 @@ defineProps<{
 defineEmits<{
     (e: 'submit'): void;
 }>();
+
+const serviceOptions = computed(() => [
+    ...props.services.map((service) => ({
+        id: String(service.id),
+        label: service.label,
+    })),
+]);
+
+const selectedService = computed({
+    get: () =>
+        serviceOptions.value.find(
+            (service) => service.id === props.form.service_id,
+        ),
+    set: (service?: { id: string; label: string }) => {
+        props.form.service_id = service?.id ?? '';
+    },
+});
 </script>
 
 <template>
@@ -52,25 +88,46 @@ defineEmits<{
                         >
                             Servicio
                         </Label>
-                        <div class="relative">
-                            <Wrench
-                                class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                            />
-                            <select
-                                id="service_id"
-                                v-model="form.service_id"
-                                class="h-11 w-full rounded-full border border-input bg-background py-2 pr-3 pl-10 text-sm"
-                            >
-                                <option value="">Selecciona un servicio</option>
-                                <option
-                                    v-for="service in services"
-                                    :key="service.id"
-                                    :value="String(service.id)"
-                                >
-                                    {{ service.label }}
-                                </option>
-                            </select>
-                        </div>
+                        <Combobox v-model="selectedService" by="id">
+                            <ComboboxAnchor as-child class="w-full">
+                                <ComboboxTrigger as-child>
+                                    <Button
+                                        variant="outline"
+                                        class="h-11 w-full justify-between rounded-full font-normal"
+                                    >
+                                        {{
+                                            selectedService?.label ??
+                                            'Seleccionar'
+                                        }}
+                                        <ChevronsUpDown class="size-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </ComboboxTrigger>
+                            </ComboboxAnchor>
+                            <ComboboxList class="w-[var(--reka-combobox-trigger-width)] overflow-hidden p-0">
+                                <div class="border-b px-3">
+                                    <ComboboxInput
+                                        class="h-9 border-0 px-0 shadow-none focus-visible:ring-0"
+                                        placeholder="Buscar servicio..."
+                                        :display-value="(value) => value?.label ?? ''"
+                                    />
+                                </div>
+                                <ComboboxEmpty>No se encontraron servicios.</ComboboxEmpty>
+                                <ComboboxViewport>
+                                    <ComboboxGroup>
+                                        <ComboboxItem
+                                            v-for="service in serviceOptions"
+                                            :key="service.id"
+                                            :value="service"
+                                        >
+                                            {{ service.label }}
+                                            <ComboboxItemIndicator>
+                                                <Check class="size-4" />
+                                            </ComboboxItemIndicator>
+                                        </ComboboxItem>
+                                    </ComboboxGroup>
+                                </ComboboxViewport>
+                            </ComboboxList>
+                        </Combobox>
                         <InputError :message="form.errors.service_id" />
                     </div>
 

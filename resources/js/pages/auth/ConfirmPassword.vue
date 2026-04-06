@@ -1,52 +1,56 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import InputError from '@/components/InputError.vue';
+import { LockKeyhole } from 'lucide-vue-next';
 import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import AuthField from '@/modules/auth/components/AuthField.vue';
 import { store } from '@/routes/password/confirm';
 
 defineOptions({
     layout: {
-        title: 'Confirm your password',
+        title: 'Confirmar contrasena',
         description:
-            'This is a secure area of the application. Please confirm your password before continuing.',
+            'Esta es un area segura de la aplicacion. Confirma tu contrasena para continuar.',
     },
 });
 </script>
 
 <template>
-    <Head title="Confirm password" />
+    <Head title="Confirmar contrasena" />
 
     <Form
         v-bind="store.form()"
         reset-on-success
         v-slot="{ errors, processing }"
+        class="space-y-6"
     >
         <div class="space-y-6">
-            <div class="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+            <AuthField
+                label="Contrasena"
+                for-id="password"
+                :icon="LockKeyhole"
+                :error="errors.password"
+            >
                 <PasswordInput
                     id="password"
                     name="password"
-                    class="mt-1 block w-full"
+                    class="h-14 rounded-xl border-transparent bg-muted/55 pr-12 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                     required
                     autocomplete="current-password"
                     autofocus
+                    placeholder="Ingresa tu contrasena"
                 />
-
-                <InputError :message="errors.password" />
-            </div>
+            </AuthField>
 
             <div class="flex items-center">
                 <Button
-                    class="w-full"
+                    class="h-14 w-full cursor-pointer rounded-xl text-sm font-semibold shadow-lg shadow-primary/25"
                     :disabled="processing"
                     data-test="confirm-password-button"
                 >
                     <Spinner v-if="processing" />
-                    Confirm password
+                    Confirmar contrasena
                 </Button>
             </div>
         </div>

@@ -14,7 +14,17 @@ export interface PersonalTask {
     description: string | null;
     status: string;
     priority: string | null;
+    due_date: string | null;
+    completed_at: string | null;
+    is_completed: boolean;
     order: number;
     created_at?: string | null;
     updated_at?: string | null;
+}
+
+export interface PersonalTaskBoardColumn {
+    key: string;
+    label: string;
+    count: number;
+    tasks: PersonalTask[];
 }

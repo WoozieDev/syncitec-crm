@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('personal_tasks', function (Blueprint $table) {
             $table->id();
-			$table->string('title');
-            $table->text('description')->nullable();
-            $table->string('status', 50);
+            $table->string('title');
+            $table->longText('description')->nullable();
+            $table->string('status', 50)->default('pendiente');
             $table->string('priority', 50)->nullable();
+            $table->date('due_date')->nullable()->index();
+            $table->timestamp('completed_at')->nullable()->index();
             $table->integer('order')->default(0);
             $table->timestamps();
         });

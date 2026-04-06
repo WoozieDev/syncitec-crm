@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/vue3';
 import {
     AlertTriangle,
     BriefcaseBusiness,
-    CircleCheckBig,
     ClipboardList,
     ListTodo,
     UserRound,
@@ -11,9 +10,6 @@ import {
     Wrench,
 } from 'lucide-vue-next';
 import { dashboard } from '@/routes';
-import { index as clientsIndex } from '@/routes/clients';
-import { index as personalTasksIndex } from '@/routes/personal-tasks';
-import { index as projectTasksIndex } from '@/routes/project-tasks';
 import { index as projectsIndex } from '@/routes/projects';
 import { index as servicesIndex } from '@/routes/services';
 
@@ -128,7 +124,9 @@ const formatDate = (value: string | null): string => {
         <section
             class="rounded-3xl border border-border/60 bg-card/70 p-5 shadow-sm backdrop-blur-sm sm:p-6"
         >
-            <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div
+                class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
+            >
                 <div class="space-y-3">
                     <p
                         class="text-xs font-bold tracking-[0.2em] text-muted-foreground uppercase"
@@ -139,107 +137,191 @@ const formatDate = (value: string | null): string => {
                         Dashboard principal
                     </h1>
                     <p class="max-w-2xl text-sm text-muted-foreground">
-                        Resumen operativo y financiero con informacion real de clientes,
-                        proyectos, servicios y tareas.
+                        Resumen operativo y financiero con informacion real de
+                        clientes, proyectos, servicios y tareas.
                     </p>
-                </div>
-
-                <div
-                    class="inline-flex items-center gap-2 self-start rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300"
-                >
-                    <CircleCheckBig class="size-4" />
-                    Estado general operativo
                 </div>
             </div>
         </section>
 
         <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <article class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+            <article
+                class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm"
+            >
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p
+                        class="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase"
+                    >
                         Clientes
                     </p>
                     <UserRound class="size-4 text-primary" />
                 </div>
-                <p class="mt-3 text-3xl font-black tracking-tight">{{ props.summary.total_clients }}</p>
+                <p class="mt-3 text-3xl font-black tracking-tight">
+                    {{ props.summary.total_clients }}
+                </p>
             </article>
 
-            <article class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+            <article
+                class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm"
+            >
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p
+                        class="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase"
+                    >
                         Proyectos
                     </p>
                     <BriefcaseBusiness class="size-4 text-primary" />
                 </div>
-                <p class="mt-3 text-3xl font-black tracking-tight">{{ props.summary.total_projects }}</p>
+                <p class="mt-3 text-3xl font-black tracking-tight">
+                    {{ props.summary.total_projects }}
+                </p>
                 <p class="mt-1 text-xs text-muted-foreground">
-                    Activos: {{ props.summary.projects_active }} · En revision: {{ props.summary.projects_in_review }}
+                    Activos: {{ props.summary.projects_active }} · En revision:
+                    {{ props.summary.projects_in_review }}
                 </p>
             </article>
 
-            <article class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+            <article
+                class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm"
+            >
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p
+                        class="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase"
+                    >
                         Servicios
                     </p>
                     <Wrench class="size-4 text-primary" />
                 </div>
-                <p class="mt-3 text-3xl font-black tracking-tight">{{ props.summary.total_services }}</p>
+                <p class="mt-3 text-3xl font-black tracking-tight">
+                    {{ props.summary.total_services }}
+                </p>
                 <p class="mt-1 text-xs text-muted-foreground">
                     Activos: {{ props.summary.services_active }}
                 </p>
             </article>
 
-            <article class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+            <article
+                class="rounded-2xl border border-border/60 bg-card p-5 shadow-sm"
+            >
                 <div class="flex items-center justify-between">
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p
+                        class="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase"
+                    >
                         Tareas completadas
                     </p>
                     <ListTodo class="size-4 text-primary" />
                 </div>
-                <p class="mt-3 text-3xl font-black tracking-tight">{{ props.tasks.completed }}</p>
+                <p class="mt-3 text-3xl font-black tracking-tight">
+                    {{ props.tasks.completed }}
+                </p>
             </article>
         </section>
 
         <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
             <div class="space-y-6 xl:col-span-8">
-                <article class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+                <article
+                    class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+                >
                     <div class="mb-5 flex items-center gap-2">
                         <WalletCards class="size-5 text-primary" />
-                        <h2 class="text-xl font-bold tracking-tight">Resumen financiero</h2>
+                        <h2 class="text-xl font-bold tracking-tight">
+                            Resumen financiero
+                        </h2>
                     </div>
 
                     <div class="grid gap-4 md:grid-cols-2">
-                        <div class="rounded-xl border border-border/60 bg-background/60 p-4">
+                        <div
+                            class="rounded-xl border border-border/60 bg-background/60 p-4"
+                        >
                             <h3 class="text-sm font-semibold">Proyectos</h3>
                             <div class="mt-3 space-y-2 text-sm">
-                                <p class="flex justify-between gap-4"><span class="text-muted-foreground">Facturado</span><strong>{{ formatCurrency(props.financial.projects_billed) }}</strong></p>
-                                <p class="flex justify-between gap-4"><span class="text-muted-foreground">Cobrado</span><strong>{{ formatCurrency(props.financial.projects_collected) }}</strong></p>
-                                <p class="flex justify-between gap-4"><span class="text-muted-foreground">Pendiente</span><strong>{{ formatCurrency(props.financial.projects_pending) }}</strong></p>
+                                <p class="flex justify-between gap-4">
+                                    <span class="text-muted-foreground"
+                                        >Facturado</span
+                                    ><strong>{{
+                                        formatCurrency(
+                                            props.financial.projects_billed,
+                                        )
+                                    }}</strong>
+                                </p>
+                                <p class="flex justify-between gap-4">
+                                    <span class="text-muted-foreground"
+                                        >Cobrado</span
+                                    ><strong>{{
+                                        formatCurrency(
+                                            props.financial.projects_collected,
+                                        )
+                                    }}</strong>
+                                </p>
+                                <p class="flex justify-between gap-4">
+                                    <span class="text-muted-foreground"
+                                        >Pendiente</span
+                                    ><strong>{{
+                                        formatCurrency(
+                                            props.financial.projects_pending,
+                                        )
+                                    }}</strong>
+                                </p>
                             </div>
                         </div>
 
-                        <div class="rounded-xl border border-border/60 bg-background/60 p-4">
+                        <div
+                            class="rounded-xl border border-border/60 bg-background/60 p-4"
+                        >
                             <h3 class="text-sm font-semibold">Servicios</h3>
                             <div class="mt-3 space-y-2 text-sm">
-                                <p class="flex justify-between gap-4"><span class="text-muted-foreground">Facturado</span><strong>{{ formatCurrency(props.financial.services_billed) }}</strong></p>
-                                <p class="flex justify-between gap-4"><span class="text-muted-foreground">Cobrado</span><strong>{{ formatCurrency(props.financial.services_collected) }}</strong></p>
-                                <p class="flex justify-between gap-4"><span class="text-muted-foreground">Pendiente</span><strong>{{ formatCurrency(props.financial.services_pending) }}</strong></p>
+                                <p class="flex justify-between gap-4">
+                                    <span class="text-muted-foreground"
+                                        >Facturado</span
+                                    ><strong>{{
+                                        formatCurrency(
+                                            props.financial.services_billed,
+                                        )
+                                    }}</strong>
+                                </p>
+                                <p class="flex justify-between gap-4">
+                                    <span class="text-muted-foreground"
+                                        >Cobrado</span
+                                    ><strong>{{
+                                        formatCurrency(
+                                            props.financial.services_collected,
+                                        )
+                                    }}</strong>
+                                </p>
+                                <p class="flex justify-between gap-4">
+                                    <span class="text-muted-foreground"
+                                        >Pendiente</span
+                                    ><strong>{{
+                                        formatCurrency(
+                                            props.financial.services_pending,
+                                        )
+                                    }}</strong>
+                                </p>
                             </div>
                         </div>
                     </div>
                 </article>
 
-                <article class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+                <article
+                    class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+                >
                     <div class="mb-5 flex items-center justify-between gap-3">
-                        <h2 class="text-xl font-bold tracking-tight">Proyectos recientes</h2>
-                        <Link :href="projectsIndex()" class="text-sm font-semibold text-primary hover:opacity-80">Ver todos</Link>
+                        <h2 class="text-xl font-bold tracking-tight">
+                            Proyectos recientes
+                        </h2>
+                        <Link
+                            :href="projectsIndex()"
+                            class="text-sm font-semibold text-primary hover:opacity-80"
+                            >Ver todos</Link
+                        >
                     </div>
 
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-left text-sm">
                             <thead>
-                                <tr class="text-xs font-semibold tracking-wide text-muted-foreground">
+                                <tr
+                                    class="text-xs font-semibold tracking-wide text-muted-foreground"
+                                >
                                     <th class="pb-3">Proyecto</th>
                                     <th class="pb-3">Cliente</th>
                                     <th class="pb-3">Estado</th>
@@ -253,11 +335,21 @@ const formatDate = (value: string | null): string => {
                                     :key="project.id"
                                     class="border-t border-border/50"
                                 >
-                                    <td class="py-3 font-medium">{{ project.name }}</td>
-                                    <td class="py-3 text-muted-foreground">{{ project.client }}</td>
-                                    <td class="py-3">{{ project.status_label }}</td>
-                                    <td class="py-3">{{ formatCurrency(project.price) }}</td>
-                                    <td class="py-3 text-muted-foreground">{{ formatDate(project.due_date) }}</td>
+                                    <td class="py-3 font-medium">
+                                        {{ project.name }}
+                                    </td>
+                                    <td class="py-3 text-muted-foreground">
+                                        {{ project.client }}
+                                    </td>
+                                    <td class="py-3">
+                                        {{ project.status_label }}
+                                    </td>
+                                    <td class="py-3">
+                                        {{ formatCurrency(project.price) }}
+                                    </td>
+                                    <td class="py-3 text-muted-foreground">
+                                        {{ formatDate(project.due_date) }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -266,10 +358,18 @@ const formatDate = (value: string | null): string => {
             </div>
 
             <div class="space-y-6 xl:col-span-4">
-                <article class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+                <article
+                    class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+                >
                     <div class="mb-4 flex items-center justify-between">
-                        <h2 class="text-lg font-bold tracking-tight">Servicios / renovaciones</h2>
-                        <Link :href="servicesIndex()" class="text-sm font-semibold text-primary hover:opacity-80">Ver todos</Link>
+                        <h2 class="text-lg font-bold tracking-tight">
+                            Servicios / renovaciones
+                        </h2>
+                        <Link
+                            :href="servicesIndex()"
+                            class="text-sm font-semibold text-primary hover:opacity-80"
+                            >Ver todos</Link
+                        >
                     </div>
                     <div class="space-y-3">
                         <div
@@ -277,17 +377,27 @@ const formatDate = (value: string | null): string => {
                             :key="service.id"
                             class="rounded-xl border border-border/60 bg-background/70 p-3"
                         >
-                            <p class="text-sm font-semibold">{{ service.name }}</p>
-                            <p class="text-xs text-muted-foreground">{{ service.client }}</p>
-                            <div class="mt-2 flex items-center justify-between text-xs">
+                            <p class="text-sm font-semibold">
+                                {{ service.name }}
+                            </p>
+                            <p class="text-xs text-muted-foreground">
+                                {{ service.client }}
+                            </p>
+                            <div
+                                class="mt-2 flex items-center justify-between text-xs"
+                            >
                                 <span>{{ service.status_label }}</span>
-                                <span class="text-muted-foreground">{{ formatDate(service.next_renewal_date) }}</span>
+                                <span class="text-muted-foreground">{{
+                                    formatDate(service.next_renewal_date)
+                                }}</span>
                             </div>
                         </div>
                     </div>
                 </article>
 
-                <article class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+                <article
+                    class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+                >
                     <div class="mb-4 flex items-center gap-2">
                         <ClipboardList class="size-5 text-primary" />
                         <h2 class="text-lg font-bold tracking-tight">Tareas</h2>
@@ -296,88 +406,109 @@ const formatDate = (value: string | null): string => {
                     <div class="grid grid-cols-3 gap-2 text-center text-xs">
                         <div class="rounded-lg bg-muted p-2">
                             <p class="font-semibold">Pendientes</p>
-                            <p class="mt-1 text-lg font-black">{{ props.tasks.pending }}</p>
+                            <p class="mt-1 text-lg font-black">
+                                {{ props.tasks.pending }}
+                            </p>
                         </div>
                         <div class="rounded-lg bg-muted p-2">
                             <p class="font-semibold">En progreso</p>
-                            <p class="mt-1 text-lg font-black">{{ props.tasks.in_progress }}</p>
+                            <p class="mt-1 text-lg font-black">
+                                {{ props.tasks.in_progress }}
+                            </p>
                         </div>
                         <div class="rounded-lg bg-muted p-2">
                             <p class="font-semibold">Completadas</p>
-                            <p class="mt-1 text-lg font-black">{{ props.tasks.completed }}</p>
+                            <p class="mt-1 text-lg font-black">
+                                {{ props.tasks.completed }}
+                            </p>
                         </div>
                     </div>
 
                     <div class="mt-4 space-y-2">
-                        <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Prioridad alta</p>
+                        <p
+                            class="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
+                        >
+                            Prioridad alta
+                        </p>
                         <div
                             v-for="task in props.tasks.priority_items"
                             :key="`${task.source}-${task.id}`"
                             class="rounded-xl border border-border/60 bg-background/70 p-3"
                         >
-                            <p class="text-sm font-semibold">{{ task.title }}</p>
+                            <p class="text-sm font-semibold">
+                                {{ task.title }}
+                            </p>
                             <p class="text-xs text-muted-foreground">
-                                {{ task.source === 'personal' ? 'Tarea personal' : `Proyecto: ${task.project ?? 'Sin proyecto'}` }}
+                                {{
+                                    task.source === 'personal'
+                                        ? 'Tarea personal'
+                                        : `Proyecto: ${task.project ?? 'Sin proyecto'}`
+                                }}
                             </p>
                         </div>
                     </div>
                 </article>
 
-                <article class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+                <article
+                    class="rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+                >
                     <div class="mb-4 flex items-center gap-2">
                         <AlertTriangle class="size-5 text-amber-500" />
-                        <h2 class="text-lg font-bold tracking-tight">Alertas rapidas</h2>
+                        <h2 class="text-lg font-bold tracking-tight">
+                            Alertas rapidas
+                        </h2>
                     </div>
 
                     <div class="space-y-4 text-sm">
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            <p
+                                class="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
+                            >
                                 Proyectos proximos a vencer
                             </p>
                             <ul class="mt-2 space-y-1">
                                 <li
-                                    v-for="item in props.alerts.projects_due_soon"
+                                    v-for="item in props.alerts
+                                        .projects_due_soon"
                                     :key="`project-alert-${item.id}`"
                                     class="flex items-center justify-between gap-3"
                                 >
-                                    <span class="truncate">{{ item.name }}</span>
-                                    <span class="text-xs text-muted-foreground">{{ formatDate(item.date) }}</span>
+                                    <span class="truncate">{{
+                                        item.name
+                                    }}</span>
+                                    <span
+                                        class="text-xs text-muted-foreground"
+                                        >{{ formatDate(item.date) }}</span
+                                    >
                                 </li>
                             </ul>
                         </div>
 
                         <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            <p
+                                class="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
+                            >
                                 Servicios proximos a renovar
                             </p>
                             <ul class="mt-2 space-y-1">
                                 <li
-                                    v-for="item in props.alerts.services_renewing_soon"
+                                    v-for="item in props.alerts
+                                        .services_renewing_soon"
                                     :key="`service-alert-${item.id}`"
                                     class="flex items-center justify-between gap-3"
                                 >
-                                    <span class="truncate">{{ item.name }}</span>
-                                    <span class="text-xs text-muted-foreground">{{ formatDate(item.date) }}</span>
+                                    <span class="truncate">{{
+                                        item.name
+                                    }}</span>
+                                    <span
+                                        class="text-xs text-muted-foreground"
+                                        >{{ formatDate(item.date) }}</span
+                                    >
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </article>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <Link :href="clientsIndex()" class="rounded-xl border border-border/60 bg-card px-4 py-3 text-center text-sm font-semibold hover:bg-muted/40">
-                        Clientes
-                    </Link>
-                    <Link :href="projectsIndex()" class="rounded-xl border border-border/60 bg-card px-4 py-3 text-center text-sm font-semibold hover:bg-muted/40">
-                        Proyectos
-                    </Link>
-                    <Link :href="servicesIndex()" class="rounded-xl border border-border/60 bg-card px-4 py-3 text-center text-sm font-semibold hover:bg-muted/40">
-                        Servicios
-                    </Link>
-                    <Link :href="props.tasks.pending > 0 ? projectTasksIndex() : personalTasksIndex()" class="rounded-xl border border-border/60 bg-card px-4 py-3 text-center text-sm font-semibold hover:bg-muted/40">
-                        Tareas
-                    </Link>
-                </div>
             </div>
         </section>
     </div>

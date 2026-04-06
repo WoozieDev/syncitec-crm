@@ -31,7 +31,8 @@ const form = useForm<PersonalTaskFormData>({
     description: props.task.description ?? '',
     status: props.task.status,
     priority: props.task.priority ?? '',
-    order: String(props.task.order),
+    due_date: props.task.due_date ?? '',
+    is_completed: props.task.is_completed,
 });
 
 const submit = () => {
@@ -49,18 +50,17 @@ const submit = () => {
             <Heading
                 variant="small"
                 title="Editar tarea"
-                description="Actualiza estado, prioridad, orden o descripcion sin cambiar la estructura real de datos."
+                description="Actualiza el plan de ejecucion de tu tarea sin tocar ordenes manuales."
             />
 
             <div class="grid gap-6 xl:grid-cols-[1fr_320px]">
                 <PersonalTaskForm
                     :form="form"
-                    :status-options="status_options"
                     :priority-options="priority_options"
                     :cancel-href="index.url()"
                     submit-label="Actualizar tarea"
                     processing-label="Guardando..."
-                    description="Ajusta los datos de la tarea personal seleccionada."
+                    description="Ajusta fecha, prioridad, estado y notas con formato basico."
                     @submit="submit"
                 />
 

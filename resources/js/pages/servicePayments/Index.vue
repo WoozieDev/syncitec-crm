@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { CreditCard, Filter, Plus, Search } from 'lucide-vue-next';
+import { computed } from 'vue';
+import { Check, CreditCard, Filter, Plus, Search } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList,
+} from '@/components/ui/combobox';
 import ServicePaymentsTable from '@/modules/servicePayments/components/ServicePaymentsTable.vue';
 import { useServicePaymentsIndex } from '@/modules/servicePayments/composables/useServicePaymentsIndex';
 import type { ServicePaymentIndexProps } from '@/modules/servicePayments/types';
@@ -43,6 +54,23 @@ const currencyFormatter = new Intl.NumberFormat('es-PE', {
 
 const formatCurrency = (value: number): string =>
     `S/ ${currencyFormatter.format(value)}`;
+
+const serviceOptions = computed(() => [
+    { id: '', label: 'Todos' },
+    ...services.value.map((service) => ({
+        id: String(service.id),
+        label: service.label,
+    })),
+]);
+
+const selectedService = computed({
+    get: () =>
+        serviceOptions.value.find((service) => service.id === serviceId.value) ??
+        serviceOptions.value[0],
+    set: (service?: { id: string; label: string }) => {
+        serviceId.value = service?.id ?? '';
+    },
+});
 </script>
 
 <template>
@@ -170,19 +198,30 @@ const formatCurrency = (value: number): string =>
                     </div>
 
                     <div class="grid flex-1 gap-3 sm:grid-cols-3">
-                        <select
-                            v-model="serviceId"
-                            class="h-10 rounded-md border border-input bg-background px-3 text-sm"
-                        >
-                            <option value="">Todos los servicios</option>
-                            <option
-                                v-for="service in services"
-                                :key="service.id"
-                                :value="String(service.id)"
-                            >
-                                {{ service.label }}
-                            </option>
-                        </select>
+                        <Combobox v-model="selectedService" by="id">
+                            <ComboboxAnchor class="w-full">
+                                <ComboboxInput
+                                    class="h-10"
+                                    placeholder="Todos"
+                                    :display-value="(value) => value?.label ?? ''"
+                                />
+                            </ComboboxAnchor>
+                            <ComboboxList class="w-[var(--reka-combobox-trigger-width)]">
+                                <ComboboxEmpty>No se encontraron servicios.</ComboboxEmpty>
+                                <ComboboxGroup>
+                                    <ComboboxItem
+                                        v-for="service in serviceOptions"
+                                        :key="service.id || 'empty'"
+                                        :value="service"
+                                    >
+                                        {{ service.label }}
+                                        <ComboboxItemIndicator>
+                                            <Check class="size-4" />
+                                        </ComboboxItemIndicator>
+                                    </ComboboxItem>
+                                </ComboboxGroup>
+                            </ComboboxList>
+                        </Combobox>
 
                         <select
                             v-model="paymentMethod"

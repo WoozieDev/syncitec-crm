@@ -7,10 +7,7 @@ import {
     CircleHelp,
     FolderKanban,
     HandCoins,
-    KanbanSquare,
-    KeyRound,
     LayoutGrid,
-    ListTodo,
     LogOut,
     Settings2,
     ShieldCheck,
@@ -40,7 +37,6 @@ import { index as clientsIndex } from '@/routes/clients';
 import { index as personalTasksIndex } from '@/routes/personal-tasks';
 import { edit as profileEdit } from '@/routes/profile';
 import { index as projectPaymentsIndex } from '@/routes/project-payments';
-import { index as projectTasksIndex } from '@/routes/project-tasks';
 import { index as projectsIndex } from '@/routes/projects';
 import { index as servicePaymentsIndex } from '@/routes/service-payments';
 import { index as servicesIndex } from '@/routes/services';
@@ -90,17 +86,6 @@ const navigationGroups: SidebarNavGroup[] = [
                 href: projectsIndex(),
                 icon: FolderKanban,
             },
-            {
-                title: 'Tareas de proyecto',
-                href: projectTasksIndex(),
-                icon: ListTodo,
-            },
-            {
-                title: 'Kanban',
-                icon: KanbanSquare,
-                disabled: true,
-                badge: 'Próx.',
-            },
         ],
     },
     {
@@ -119,7 +104,7 @@ const navigationGroups: SidebarNavGroup[] = [
         ],
     },
     {
-        title: 'Operación',
+        title: 'Operacion',
         items: [
             {
                 title: 'Servicios',
@@ -130,13 +115,7 @@ const navigationGroups: SidebarNavGroup[] = [
                 title: 'Proveedores',
                 icon: BriefcaseBusiness,
                 disabled: true,
-                badge: 'Próx.',
-            },
-            {
-                title: 'Estados',
-                icon: ShieldCheck,
-                disabled: true,
-                badge: 'Próx.',
+                badge: 'Prox.',
             },
         ],
     },
@@ -152,18 +131,12 @@ const navigationGroups: SidebarNavGroup[] = [
                 title: 'Roles',
                 icon: ShieldCheck,
                 disabled: true,
-                badge: 'Próx.',
-            },
-            {
-                title: 'Permisos',
-                icon: KeyRound,
-                disabled: true,
-                badge: 'Próx.',
+                badge: 'Prox.',
             },
         ],
     },
     {
-        title: 'Configuración',
+        title: 'Configuracion',
         items: [
             {
                 title: 'Mi Perfil',
@@ -269,7 +242,7 @@ const handleLogout = () => {
                                     v-else
                                     size="lg"
                                     disabled
-                                    :tooltip="`${item.title} próximamente`"
+                                    :tooltip="`${item.title} proximamente`"
                                     class="rounded-xl px-3 text-sm font-medium text-sidebar-foreground/45 opacity-100"
                                 >
                                     <component
@@ -311,7 +284,7 @@ const handleLogout = () => {
                     @click="handleLogout"
                 >
                     <LogOut class="size-4" />
-                    <span>Cerrar sesión</span>
+                    <span>Cerrar sesion</span>
                 </Link>
             </div>
         </SidebarFooter>

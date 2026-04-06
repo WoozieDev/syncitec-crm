@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\PersonalTasks;
 
+use App\Models\PersonalTask;
+use App\Support\RichTextSanitizer;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -18,12 +20,18 @@ class UpdatePersonalTaskRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $isCompleted = filter_var($this->input('is_completed'), FILTER_VALIDATE_BOOL);
+        $status = PersonalTask::normalizeStatus((string) $this->input('status'));
+
         $this->merge([
             'title' => trim((string) $this->input('title')),
-            'description' => $this->filled('description') ? trim((string) $this->input('description')) : null,
-            'status' => trim((string) $this->input('status')),
-            'priority' => $this->filled('priority') ? trim((string) $this->input('priority')) : null,
-            'order' => $this->filled('order') ? $this->input('order') : 0,
+            'description' => RichTextSanitizer::sanitize($this->input('description')),
+            'status' => $isCompleted ? 'completada' : $status,
+            'priority' => PersonalTask::normalizePriority((string) $this->input('priority')),
+            'due_date' => $this->filled('due_date') ? $this->input('due_date') : null,
+            'completed_at' => $isCompleted ? ($this->personalTask?->completed_at ?? now()) : null,
+            'is_completed' => $isCompleted,
+            'order' => $this->filled('order') ? $this->input('order') : null,
         ]);
     }
 
@@ -37,17 +45,11 @@ class UpdatePersonalTaskRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'status' => ['required', 'string', Rule::in([
-                'pendiente',
-                'en_progreso',
-                'en_revision',
-                'completada',
-            ])],
-            'priority' => ['nullable', 'string', Rule::in([
-                'alta',
-                'media',
-                'baja',
-            ])],
+            'status' => ['required', 'string', Rule::in(PersonalTask::STATUSES)],
+            'priority' => ['nullable', 'string', Rule::in(PersonalTask::PRIORITIES)],
+            'due_date' => ['nullable', 'date'],
+            'completed_at' => ['nullable', 'date'],
+            'is_completed' => ['nullable', 'boolean'],
             'order' => ['nullable', 'integer', 'min:0'],
         ];
     }
