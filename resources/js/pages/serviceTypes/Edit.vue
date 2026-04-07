@@ -46,7 +46,7 @@ const submit = () => {
 
             <ServiceTypeForm
                 :form="form"
-                :cancel-href="index().url()"
+                :cancel-href="index.url()"
                 submit-label="Actualizar tipo"
                 processing-label="Guardando..."
                 description="Este cambio impacta la forma en que se muestra el tipo en servicios."

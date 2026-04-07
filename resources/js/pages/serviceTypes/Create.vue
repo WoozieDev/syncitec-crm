@@ -44,7 +44,7 @@ const submit = () => {
 
             <ServiceTypeForm
                 :form="form"
-                :cancel-href="index().url()"
+                :cancel-href="index.url()"
                 submit-label="Guardar tipo"
                 processing-label="Guardando..."
                 description="Usa nombres claros y cortos para que el equipo los identifique rapido."

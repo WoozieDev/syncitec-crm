@@ -84,7 +84,7 @@ defineProps<{
                         </AuthField>
 
                         <AuthField
-                            label="Contrasena"
+                            label="Contraseña"
                             for-id="password"
                             :icon="LockKeyhole"
                             :error="errors.password"
@@ -94,7 +94,7 @@ defineProps<{
                                     :href="passwordRequest()"
                                     class="text-xs font-semibold normal-case tracking-normal"
                                 >
-                                    Recuperar contrasena
+                                    Recuperar contraseña
                                 </TextLink>
                             </template>
 
@@ -104,7 +104,7 @@ defineProps<{
                                 required
                                 :tabindex="2"
                                 autocomplete="current-password"
-                                placeholder="Ingresa tu contrasena"
+                                placeholder="Ingresa tu contraseña"
                                 class="h-14 rounded-xl border-transparent bg-muted/55 pr-12 pl-12 shadow-none focus-visible:bg-background dark:bg-muted/35"
                             />
                         </AuthField>
