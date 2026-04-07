@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bold, Eraser, Italic, List, ListOrdered, Quote } from 'lucide-vue-next';
+import { Bold, Eraser, Italic, List, ListOrdered } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 
@@ -50,7 +50,9 @@ watch(
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-2xl border border-border/60 bg-background">
+    <div
+        class="overflow-hidden rounded-2xl border border-border/60 bg-background"
+    >
         <div
             class="flex flex-wrap items-center gap-2 border-b border-border/60 bg-muted/30 p-3"
         >
@@ -92,16 +94,6 @@ watch(
                 @click="applyCommand('insertOrderedList')"
             >
                 <ListOrdered class="size-4" />
-            </Button>
-
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                class="cursor-pointer"
-                @click="applyCommand('formatBlock', 'blockquote')"
-            >
-                <Quote class="size-4" />
             </Button>
 
             <Button

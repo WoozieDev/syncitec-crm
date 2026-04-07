@@ -4,7 +4,7 @@ import { computed, ref, watch } from 'vue';
 import type { ComputedRef, Ref } from 'vue';
 import type {
     PersonalTask,
-    PersonalTaskBoardColumn,
+    PersonalTaskGroup,
     PersonalTaskIndexProps,
     PersonalTaskOverview,
     PersonalTaskPriorityOption,
@@ -13,13 +13,10 @@ import {
     completion as completionRoute,
     destroy,
     index,
-    move as moveRoute,
 } from '@/routes/personal-tasks';
 
 export type UsePersonalTasksIndexReturn = {
-    board: ComputedRef<PersonalTaskBoardColumn[]>;
-    backlogTasks: ComputedRef<PersonalTask[]>;
-    completedTasks: ComputedRef<PersonalTask[]>;
+    groupedTasks: ComputedRef<PersonalTaskGroup[]>;
     overview: ComputedRef<PersonalTaskOverview>;
     priorityOptions: ComputedRef<PersonalTaskPriorityOption[]>;
     search: Ref<string>;
@@ -27,15 +24,12 @@ export type UsePersonalTasksIndexReturn = {
     completion: Ref<string>;
     handleDelete: (task: PersonalTask) => void;
     toggleCompletion: (task: PersonalTask, value: boolean) => void;
-    moveTask: (task: PersonalTask, bucket: string) => void;
 };
 
 export const usePersonalTasksIndex = (
     props: PersonalTaskIndexProps,
 ): UsePersonalTasksIndexReturn => {
-    const board = computed(() => props.board);
-    const backlogTasks = computed(() => props.backlog_tasks);
-    const completedTasks = computed(() => props.completed_tasks);
+    const groupedTasks = computed(() => props.grouped_tasks);
     const overview = computed(() => props.overview);
     const priorityOptions = computed(() => props.priority_options);
     const search = ref(props.filters.search ?? '');
@@ -92,20 +86,8 @@ export const usePersonalTasksIndex = (
         );
     };
 
-    const moveTask = (task: PersonalTask, bucket: string) => {
-        router.patch(
-            moveRoute(task.id),
-            { bucket },
-            {
-                preserveScroll: true,
-            },
-        );
-    };
-
     return {
-        board,
-        backlogTasks,
-        completedTasks,
+        groupedTasks,
         overview,
         priorityOptions,
         search,
@@ -113,6 +95,5 @@ export const usePersonalTasksIndex = (
         completion,
         handleDelete,
         toggleCompletion,
-        moveTask,
     };
 };

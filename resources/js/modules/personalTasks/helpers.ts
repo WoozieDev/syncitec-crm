@@ -13,13 +13,17 @@ export const priorityDotClasses: Record<string, string> = {
 };
 
 export const statusBadgeClasses: Record<string, string> = {
-    pendiente: 'bg-slate-500/15 text-slate-700 dark:bg-slate-400/15 dark:text-slate-200',
-    en_progreso: 'bg-blue-500/15 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200',
-    completada: 'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200',
+    pendiente:
+        'bg-slate-500/15 text-slate-700 dark:bg-slate-400/15 dark:text-slate-200',
+    en_progreso:
+        'bg-blue-500/15 text-blue-700 dark:bg-blue-400/15 dark:text-blue-200',
+    completada:
+        'bg-emerald-500/15 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200',
 };
 
-export const plannerColumnClasses: Record<string, string> = {
-    today: 'border-rose-500/20 bg-rose-500/5',
+export const taskGroupClasses: Record<string, string> = {
+    overdue: 'border-rose-500/30 bg-rose-500/5',
+    today: 'border-amber-500/30 bg-amber-500/5',
     this_week: 'border-blue-500/20 bg-blue-500/5',
     next_week: 'border-emerald-500/20 bg-emerald-500/5',
     backlog: 'border-border/60 bg-muted/20',
@@ -47,7 +51,10 @@ export const stripHtml = (value: string | null | undefined): string => {
     }
 
     if (typeof window === 'undefined') {
-        return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        return value
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
     }
 
     const element = document.createElement('div');

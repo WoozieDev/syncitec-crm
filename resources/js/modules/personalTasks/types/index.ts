@@ -1,5 +1,5 @@
 export type {
-    PersonalTaskBoardColumn,
+    PersonalTaskGroup,
     PersonalTask,
     PersonalTaskPriorityOption,
     PersonalTaskStatusOption,
