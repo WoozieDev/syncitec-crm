@@ -9,6 +9,7 @@ use App\Http\Controllers\ProjectModuleController;
 use App\Http\Controllers\ProjectPaymentController;
 use App\Http\Controllers\ProjectTaskController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\ServiceTypeController;
 use App\Http\Controllers\ServicePaymentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('project-tasks/{projectTask}', [ProjectTaskController::class, 'destroy'])
         ->name('project-tasks.destroy');
     Route::resource('services', ServiceController::class);
+    Route::resource('serviceTypes', ServiceTypeController::class);
     Route::resource('service-payments', ServicePaymentController::class);
     Route::resource('users', UserController::class);
 });
