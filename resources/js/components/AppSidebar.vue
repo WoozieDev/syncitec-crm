@@ -14,6 +14,7 @@ import {
     SunMoon,
     UserCog,
     Users,
+    Tag,
     Wrench,
 } from 'lucide-vue-next';
 import type { LucideIcon } from 'lucide-vue-next';
@@ -40,6 +41,7 @@ import { index as projectPaymentsIndex } from '@/routes/project-payments';
 import { index as projectsIndex } from '@/routes/projects';
 import { index as servicePaymentsIndex } from '@/routes/service-payments';
 import { index as servicesIndex } from '@/routes/services';
+import { index as serviceTypesIndex } from '@/routes/serviceTypes';
 import { index as usersIndex } from '@/routes/users';
 
 type SidebarNavItem = {
@@ -110,6 +112,11 @@ const navigationGroups: SidebarNavGroup[] = [
                 title: 'Servicios',
                 href: servicesIndex(),
                 icon: Wrench,
+            },
+            {
+                title: 'Tipos de servicio',
+                href: serviceTypesIndex(),
+                icon: Tag,
             },
             {
                 title: 'Proveedores',
