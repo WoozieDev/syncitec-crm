@@ -13,18 +13,15 @@ class RichTextSanitizer
      * @var array<int, string>
      */
     private const ALLOWED_TAGS = [
-        'div',
         'p',
         'br',
         'strong',
         'b',
         'em',
         'i',
-        'u',
         'ul',
         'ol',
         'li',
-        'blockquote',
     ];
 
     /**

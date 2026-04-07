@@ -22,7 +22,7 @@ export interface PersonalTask {
     updated_at?: string | null;
 }
 
-export interface PersonalTaskBoardColumn {
+export interface PersonalTaskGroup {
     key: string;
     label: string;
     count: number;

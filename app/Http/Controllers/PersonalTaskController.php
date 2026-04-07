@@ -25,7 +25,7 @@ class PersonalTaskController extends Controller
         $priority = $request->string('priority')->trim()->toString();
         $completion = $request->string('completion')->trim()->toString();
 
-        $baseQuery = PersonalTask::query()
+        $tasks = PersonalTask::query()
             ->when($search !== '', function (Builder $query) use ($search) {
                 $query->where(function (Builder $subQuery) use ($search) {
                     $subQuery
@@ -37,9 +37,7 @@ class PersonalTaskController extends Controller
             })
             ->when($priority !== '', fn (Builder $query) => $query->where('priority', PersonalTask::normalizePriority($priority)))
             ->when($completion === 'open', fn (Builder $query) => $query->whereNull('completed_at'))
-            ->when($completion === 'completed', fn (Builder $query) => $query->whereNotNull('completed_at'));
-
-        $tasks = (clone $baseQuery)
+            ->when($completion === 'completed', fn (Builder $query) => $query->whereNotNull('completed_at'))
             ->orderByRaw('CASE WHEN completed_at IS NULL THEN 0 ELSE 1 END')
             ->orderBy('due_date')
             ->orderBy('order')
@@ -51,11 +49,16 @@ class PersonalTaskController extends Controller
         $nextWeekStart = $endOfWeek->copy()->addDay()->startOfDay();
         $nextWeekEnd = $nextWeekStart->copy()->endOfWeek();
 
+        $groupedSections = [
+            $this->groupSection('overdue', 'Atrasadas', $tasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
+            $this->groupSection('today', 'Hoy', $tasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
+            $this->groupSection('this_week', 'Esta semana', $tasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
+            $this->groupSection('next_week', 'Próxima semana', $tasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
+            $this->groupSection('backlog', 'Backlog / Sin fecha', $tasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
+        ];
+
         $openTasks = $tasks->whereNull('completed_at')->values();
-        $completedTasks = $tasks
-            ->whereNotNull('completed_at')
-            ->sortByDesc(fn (PersonalTask $task) => $task->completed_at?->timestamp ?? 0)
-            ->values();
+        $completedTasks = $tasks->whereNotNull('completed_at')->values();
 
         return Inertia::render('personalTasks/Index', [
             'filters' => [
@@ -67,27 +70,14 @@ class PersonalTaskController extends Controller
                 'total_tasks' => $tasks->count(),
                 'open_tasks' => $openTasks->count(),
                 'completed' => $completedTasks->count(),
-                'today' => $this->bucketTasks($openTasks, 'today', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
-                'this_week' => $this->bucketTasks($openTasks, 'this_week', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
-                'next_week' => $this->bucketTasks($openTasks, 'next_week', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
-                'backlog' => $this->bucketTasks($openTasks, 'backlog', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
+                'overdue' => $this->groupTasks($tasks, 'overdue', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
+                'today' => $this->groupTasks($tasks, 'today', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
+                'this_week' => $this->groupTasks($tasks, 'this_week', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
+                'next_week' => $this->groupTasks($tasks, 'next_week', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
+                'backlog' => $this->groupTasks($tasks, 'backlog', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)->count(),
             ],
             'priority_options' => $this->priorityOptions(),
-            'board' => [
-                $this->boardColumn('today', 'Tareas hoy', $openTasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
-                $this->boardColumn('this_week', 'Esta semana', $openTasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
-                $this->boardColumn('next_week', 'Proxima semana', $openTasks, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd),
-            ],
-            'backlog_tasks' => $this
-                ->bucketTasks($openTasks, 'backlog', $today, $endOfWeek, $nextWeekStart, $nextWeekEnd)
-                ->map(fn (PersonalTask $task) => $this->taskData($task))
-                ->values()
-                ->all(),
-            'completed_tasks' => $completedTasks
-                ->take(8)
-                ->map(fn (PersonalTask $task) => $this->taskData($task))
-                ->values()
-                ->all(),
+            'grouped_tasks' => $groupedSections,
         ]);
     }
 
@@ -257,7 +247,7 @@ class PersonalTaskController extends Controller
         ];
     }
 
-    private function boardColumn(
+    private function groupSection(
         string $key,
         string $label,
         Collection $tasks,
@@ -266,47 +256,64 @@ class PersonalTaskController extends Controller
         CarbonInterface $nextWeekStart,
         CarbonInterface $nextWeekEnd,
     ): array {
-        $bucketTasks = $this->bucketTasks($tasks, $key, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd);
+        $groupTasks = $this->groupTasks($tasks, $key, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd);
 
         return [
             'key' => $key,
             'label' => $label,
-            'count' => $bucketTasks->count(),
-            'tasks' => $bucketTasks->map(fn (PersonalTask $task) => $this->taskData($task))->values()->all(),
+            'count' => $groupTasks->count(),
+            'tasks' => $groupTasks->map(fn (PersonalTask $task) => $this->taskData($task))->values()->all(),
         ];
     }
 
-    private function bucketTasks(
+    private function groupTasks(
         Collection $tasks,
-        string $bucket,
+        string $group,
         CarbonInterface $today,
         CarbonInterface $endOfWeek,
         CarbonInterface $nextWeekStart,
         CarbonInterface $nextWeekEnd,
     ): Collection {
         return $tasks
-            ->filter(function (PersonalTask $task) use ($bucket, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd) {
+            ->filter(function (PersonalTask $task) use ($group, $today, $endOfWeek, $nextWeekStart, $nextWeekEnd) {
+                if ($group === 'backlog') {
+                    return $task->due_date === null;
+                }
+
                 if ($task->due_date === null) {
-                    return $bucket === 'backlog';
+                    return false;
                 }
 
                 $dueDate = $task->due_date->copy()->startOfDay();
 
-                return match ($bucket) {
+                return match ($group) {
+                    'overdue' => $dueDate->lessThan($today) && $task->completed_at === null,
                     'today' => $dueDate->equalTo($today),
-                    'this_week' => $dueDate->greaterThan($today) && $dueDate->lessThanOrEqualTo($endOfWeek),
+                    'this_week' => $dueDate->greaterThan($today)
+                        && $dueDate->lessThanOrEqualTo($endOfWeek)
+                        && $task->completed_at === null,
                     'next_week' => $dueDate->greaterThanOrEqualTo($nextWeekStart) && $dueDate->lessThanOrEqualTo($nextWeekEnd),
-                    'backlog' => $dueDate->greaterThan($nextWeekEnd),
                     default => false,
                 };
             })
             ->sortBy(fn (PersonalTask $task) => sprintf(
-                '%011d-%011d-%011d',
-                $task->order,
+                '%d-%d-%011d-%011d',
+                $task->completed_at === null ? 0 : 1,
+                $this->priorityRank($task->priority),
                 $task->due_date?->timestamp ?? PHP_INT_MAX,
                 $task->id,
             ))
             ->values();
+    }
+
+    private function priorityRank(?string $priority): int
+    {
+        return match (PersonalTask::normalizePriority($priority)) {
+            'alta' => 0,
+            'media' => 1,
+            'baja' => 2,
+            default => 3,
+        };
     }
 
     private function nextOrderForDueDate(?string $dueDate, ?int $ignoreId = null): int
@@ -321,6 +328,6 @@ class PersonalTaskController extends Controller
             )
             ->max('order');
 
-        return ((int) $maxOrder) + 10;
+        return ((int) $maxOrder) + 1;
     }
 }

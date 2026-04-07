@@ -4,7 +4,7 @@ use App\Models\PersonalTask;
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
-test('personal task index groups open tasks into planner buckets', function () {
+test('personal task index groups tasks into vertical sections', function () {
     $user = User::factory()->create();
 
     PersonalTask::factory()->create([
@@ -55,18 +55,21 @@ test('personal task index groups open tasks into planner buckets', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('personalTasks/Index')
-            ->has('board', 3)
-            ->where('board.0.key', 'today')
-            ->where('board.0.count', 1)
-            ->where('board.1.key', 'this_week')
-            ->where('board.1.count', 1)
-            ->where('board.2.key', 'next_week')
-            ->where('board.2.count', 1)
-            ->has('backlog_tasks', 1)
-            ->has('completed_tasks', 1)
+            ->has('grouped_tasks', 5)
+            ->where('grouped_tasks.0.key', 'overdue')
+            ->where('grouped_tasks.0.count', 0)
+            ->where('grouped_tasks.1.key', 'today')
+            ->where('grouped_tasks.1.count', 1)
+            ->where('grouped_tasks.2.key', 'this_week')
+            ->where('grouped_tasks.2.count', 1)
+            ->where('grouped_tasks.3.key', 'next_week')
+            ->where('grouped_tasks.3.count', 1)
+            ->where('grouped_tasks.4.key', 'backlog')
+            ->where('grouped_tasks.4.count', 1)
             ->where('overview.total_tasks', 5)
             ->where('overview.open_tasks', 4)
-            ->where('overview.completed', 1));
+            ->where('overview.completed', 1)
+            ->where('overview.overdue', 0));
 });
 
 test('storing a personal task sanitizes rich text and marks it complete when requested', function () {

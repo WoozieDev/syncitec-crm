@@ -1,6 +1,6 @@
 import type {
-    PersonalTaskBoardColumn,
     PersonalTask,
+    PersonalTaskGroup,
     PersonalTaskPriorityOption,
 } from './personalTask';
 
@@ -8,6 +8,7 @@ export interface PersonalTaskOverview {
     total_tasks: number;
     open_tasks: number;
     completed: number;
+    overdue: number;
     today: number;
     this_week: number;
     next_week: number;
@@ -22,9 +23,7 @@ export interface PersonalTaskIndexProps {
     };
     overview: PersonalTaskOverview;
     priority_options: PersonalTaskPriorityOption[];
-    board: PersonalTaskBoardColumn[];
-    backlog_tasks: PersonalTask[];
-    completed_tasks: PersonalTask[];
+    grouped_tasks: PersonalTaskGroup[];
 }
 
 export interface PersonalTaskCreateProps {
