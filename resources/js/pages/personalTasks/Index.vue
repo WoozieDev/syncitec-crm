@@ -27,9 +27,7 @@ defineOptions({
 });
 
 const {
-    board,
-    backlogTasks,
-    completedTasks,
+    groupedTasks,
     overview,
     priorityOptions,
     search,
@@ -37,7 +35,6 @@ const {
     completion,
     handleDelete,
     toggleCompletion,
-    moveTask,
 } = usePersonalTasksIndex(props);
 </script>
 
@@ -60,7 +57,9 @@ const {
                         >
                             <CalendarRange class="size-4" />
                             <span class="font-semibold">
-                                {{ overview.open_tasks.toLocaleString('es-ES') }}
+                                {{
+                                    overview.open_tasks.toLocaleString('es-ES')
+                                }}
                                 activas
                             </span>
                         </div>
@@ -71,10 +70,12 @@ const {
                             >
                                 Planner personal
                             </h1>
-                            <p class="mt-2 max-w-3xl text-sm text-muted-foreground">
+                            <p
+                                class="mt-2 max-w-3xl text-sm text-muted-foreground"
+                            >
                                 Vista ligera tipo Asana para decidir que haces
-                                hoy, que va esta semana y que se puede empujar
-                                a la siguiente.
+                                hoy, que va esta semana y que se puede empujar a
+                                la siguiente.
                             </p>
                         </div>
                     </div>
@@ -105,7 +106,7 @@ const {
                     </div>
                 </div>
 
-                <div class="grid gap-4 lg:grid-cols-5">
+                <div class="grid gap-4 lg:grid-cols-6">
                     <article
                         class="rounded-2xl border border-border/60 bg-background/75 px-5 py-4"
                     >
@@ -121,10 +122,23 @@ const {
                         class="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-5 py-4"
                     >
                         <p class="text-xs font-semibold text-muted-foreground">
-                            Hoy
+                            Atrasadas
                         </p>
                         <p
                             class="mt-2 text-3xl font-black tracking-tight text-rose-700 dark:text-rose-200"
+                        >
+                            {{ overview.overdue }}
+                        </p>
+                    </article>
+
+                    <article
+                        class="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4"
+                    >
+                        <p class="text-xs font-semibold text-muted-foreground">
+                            Hoy
+                        </p>
+                        <p
+                            class="mt-2 text-3xl font-black tracking-tight text-amber-700 dark:text-amber-200"
                         >
                             {{ overview.today }}
                         </p>
@@ -173,7 +187,9 @@ const {
                 >
                     <div class="flex items-center gap-2 text-muted-foreground">
                         <Filter class="size-4" />
-                        <span class="text-xs font-semibold tracking-[0.15em] uppercase">
+                        <span
+                            class="text-xs font-semibold tracking-[0.15em] uppercase"
+                        >
                             Filtros
                         </span>
                     </div>
@@ -251,8 +267,8 @@ const {
                     >
                         <CheckCircle2 class="size-4 text-emerald-600" />
                         <span>
-                            Arrastra tarjetas entre paneles para cambiar su fecha
-                            objetivo sin editar el formulario.
+                            Marca tareas como completadas sin salir de la lista
+                            y usa los filtros para enfocarte rapido.
                         </span>
                     </div>
                 </div>
@@ -260,14 +276,9 @@ const {
         </section>
 
         <PersonalTasksTable
-            :board="board"
-            :backlog-tasks="backlogTasks"
-            :completed-tasks="completedTasks"
+            :grouped-tasks="groupedTasks"
             @delete="handleDelete"
-            @toggle-completion="
-                toggleCompletion($event.task, $event.value)
-            "
-            @move="moveTask($event.task, $event.bucket)"
+            @toggle-completion="toggleCompletion($event.task, $event.value)"
         />
     </div>
 </template>
